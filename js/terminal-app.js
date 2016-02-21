@@ -11,6 +11,10 @@
 	  
 */
 
+var xOffSet = 8;
+var lineHeight = 26;
+var fontSize = 26;
+
 var body = document.querySelector('body');
 var terminal = document.getElementById('terminal');
 var canvas = document.getElementById('canvas');
@@ -27,7 +31,9 @@ canvasInit();
 
 //set up key capture event
 body.addEventListener('keypress', function(key){
-	var pos = 100;
+	var charSize = fontSize * 0.55;
+	var lineCharLength = Math.round(canvas.width / charSize - (charSize));
+	var pos = lineCharLength;
 	var temp;
 	text += String.fromCharCode(key.which);
 	if(key.which == 13){
@@ -43,8 +49,8 @@ body.addEventListener('keypress', function(key){
 		keyBuffer.push(temp);
 		text = prompt;
 	}
-	else if(text.length > 100) {
-		pos = 100;
+	else if(text.length > lineCharLength) {
+		pos = lineCharLength;
 		temp = prompt + text.slice(pos);
 		text = text.slice(0, pos);
 		keyBuffer[keyBuffer.length - 1] = text;
@@ -62,7 +68,9 @@ body.addEventListener('keypress', function(key){
 	return;
 });
 
-
+body.addEventListener('click', function(mouse){
+	console.log(mouse.pageX);
+});
 
 
 
@@ -79,9 +87,8 @@ function canvasInit(){
 
 //draw text
 function drawText(keyBuffer){
-		var lineHeight = 30;
-		var fontSize = 26;
-		var fontType = "sans-serif";
+		
+		var fontType = "monospace";
 		
 
 		ctx.fillStyle = 'green';
@@ -95,11 +102,14 @@ function drawText(keyBuffer){
 			//console.log("looping:", i);	
 		}
 
-		//cursorX = (keyBuffer[keyBuffer.length - 1].length) * (fontSize * 0.5);
-		//cursorY = ((keyBuffer.length-1) * lineHeight) + (lineHeight/2);
-		//console.log(cursorX, cursorY);
-		//ctx.fillStyle = 'white';
-		//ctx.fillRect(cursorX, cursorY, fontSize / 2, fontSize / 2);
+		console.log(keyBuffer[keyBuffer.length - 1].length);
+
+		cursorX = ((keyBuffer[keyBuffer.length - 1].length + 1) * (fontSize * 0.55)) - (xOffSet);
+		//cursorY = (((keyBuffer.length-1) * lineHeight) + (lineHeight/2)) + 2;
+		cursorY  = ((keyBuffer.length-1) * lineHeight) + (lineHeight);
+		console.log(cursorX, cursorY);
+		ctx.fillStyle = 'white';
+		ctx.fillRect(cursorX, cursorY, fontSize * 0.55, 2);
 
 		/*Draw cursor at end of line -
 		   1. calculate x position based on length of last keyBuffer line * font size?
