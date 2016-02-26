@@ -49,6 +49,8 @@ var ctx = canvas.getContext("2d");
 var cursorX = 0,
 	cursorY = 0;
 
+var displayArea;
+
 canvasInit();  //Initialize the canvas
 
 //Backspace listener that deletes current text
@@ -61,7 +63,7 @@ body.addEventListener('keydown', function(key){
 		if(text.length > prompt.length){
 			text = text.slice(0, -1);
 			keyBuffer[keyBuffer.length - 1] = text;
-			drawText(keyBuffer);			
+			drawText(keyBuffer, displayArea);			
 		}
 		
 	}
@@ -125,7 +127,7 @@ body.addEventListener('keypress', function(key){
 	}
 
 	//Rewdraw console text				
-	drawText(keyBuffer);
+	drawText(keyBuffer, displayArea);
 	//console.log(keyBuffer);
 	
 });
@@ -140,32 +142,63 @@ body.addEventListener('click', function(mouse){
 function canvasInit(){
 	canvas.width = 1200;
 	canvas.height = 800;
+	displayArea = {x:0, y:0, width:canvas.width, height:canvas.height, background:'green'};  //Just a temporary display area for terminal drawText function
 
 	ctx.fillStyle = 'green';
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
-	drawText(keyBuffer)
+	drawText(keyBuffer, displayArea);
 	//window.requestAnimationFrame(drawCursor);
 }
 
 //draw text
-function drawText(keyBuffer){
+/* 
+	Going to change this function so that it
+	   1. takes an object that describes a rectangular area to display the text
+	   2. object is as follows {x: value, y: value, width: value, height: value}
+	   3. If text goes outside the bounds of the display area height (only track that for now)
+	      then alter the text array by shifting out number of elements over verticale lines
+	   4. could move regular line wraping (without enter) to the draw function?
+	        - also, we don't want to send a line as a command untill enter is hit   
+
+*/
+function drawText(text, displayArea){
+	/* Paramaters: 
+	        - text = array of lines to display
+	        - displayArea = object that defines displayArea {x:value, y:value, width:value, height:value, background:value}
+	   Outputs: refreshes displayArea and draws text to area with proper line wraping and scrolling to fit     
+	*/
+
+	var x = displayArea.x,
+		y = displayArea.y,
+		width = displayArea.width,
+		height = displayArea.height,
+		background = displayArea.background;
+
+	var displayMaxLines = Math.floor(height / lineHeight);	
 
 	//Redraw canvas background to erase current text and images	
-	ctx.fillStyle = 'green';
+	ctx.fillStyle = background;
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 	//Set font size, type, and color
 	ctx.font = fontSize + "px " + fontType;
 	ctx.fillStyle = 'black';
 
+	//Fit text to display height
+	if(text.length > displayMaxLines){
+		var overCount = text.length - displayMaxLines;
+		for(var c = 0; c < overCount; c++){
+			text.shift(); //shifts first lines out as text overflows display area
+		}
+	}
+
 	//Draw contents of keyBuffer onto canvas
-	for(var i = 0; i <= keyBuffer.length-1; i++) {
-		ctx.fillText(keyBuffer[i], 0, lineHeight * (i + 1));
+	for(var i = 0; i <= text.length-1; i++) {
+		ctx.fillText(text[i], 0, lineHeight * (i + 1));
 	}
 
 	//Draw the cursor
-	drawCursor(keyBuffer);
-	
+	drawCursor(text);
 }
 
 
