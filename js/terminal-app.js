@@ -75,7 +75,10 @@ body.addEventListener('keypress', function(key){
 	var pos = lineCharLength;
 	var temp;
 	//Decalre some utility functions
-
+	var addNewLine = function(){
+		keyBuffer[keyBuffer.length - 1] = text;
+		keyBuffer.push(temp);
+	}
 
 	//implimentation of a line buffer to display multiple lines of text
 	//Just need a word wrap function now
@@ -86,36 +89,47 @@ body.addEventListener('keypress', function(key){
 
 	}
 	
-
-	if(key.which == 13){  //If there is a carraige return
+	//If there is a carraige return, create a new line
+	if(key.which == 13){  
 		pos = text.length - 1;
-		temp = prompt
+		//slice current line up to break and after, storing stuff after on next line and rest in buffer
+		temp = prompt;
 		text = text.slice(0, pos);
-		keyBuffer[keyBuffer.length - 1] = text;
-		keyBuffer.push(temp);
+		addNewLine();
 		text = prompt;
+		//!!!!!!need to add code that sends line to command interpreter
+		
 	}
+	//If text reaches end of line, make a new line (note: but maybe not a forced carriage return?)
 	else if(text.length > lineCharLength) {
-		pos = lineCharLength;
+		//get break position
+		pos = lineCharLength + 1;
+		//test for break on word and if so, then reset position to space before word
+		if(text[pos-1] != " "){
+			pos = text.lastIndexOf(" ") + 1;
+			if(pos == 0)
+				pos = lineCharLength;
+		}
+		//slice current line up to break and after, storing stuff after on next line and rest in buffer
 		temp = prompt + text.slice(pos);
 		text = text.slice(0, pos);
-		keyBuffer[keyBuffer.length - 1] = text;
-		keyBuffer.push(temp);
-		text = prompt;
+		addNewLine();
+		text = temp;
 	}
+	//Add text to end of keybuffer
 	else{
-		console.log("This should not create new lines!");
+		//console.log("This should not create new lines!");
 		keyBuffer[keyBuffer.length - 1] = text;	
 	}
 
-				
+	//Rewdraw console text				
 	drawText(keyBuffer);
-	console.log(keyBuffer);
-	return;
+	//console.log(keyBuffer);
+	
 });
 
 body.addEventListener('click', function(mouse){
-	console.log(mouse.pageX);
+	//console.log(mouse.pageX);
 });
 
 
@@ -149,12 +163,12 @@ function drawText(keyBuffer){
 		}
 
 
-		console.log(keyBuffer[keyBuffer.length - 1].length);
+		//console.log(keyBuffer[keyBuffer.length - 1].length);
 
 		cursorX = ((keyBuffer[keyBuffer.length - 1].length + 1) * (fontSize * 0.55)) - (xOffSet);
 		//cursorY = (((keyBuffer.length-1) * lineHeight) + (lineHeight/2)) + 2;
 		cursorY  = ((keyBuffer.length-1) * lineHeight) + (lineHeight);
-		console.log(cursorX, cursorY);
+		//console.log(cursorX, cursorY);
 		ctx.fillStyle = 'white';
 		ctx.fillRect(cursorX, cursorY, fontSize * 0.55, 2);
 
