@@ -3,11 +3,9 @@
 
 /*
 	Basic terminal
-	- Need to add word wrap so that words don't get split
-	- Need to add backspace and delete
 	- need to add text scrolling at bottom of screen
 	  o would also be nice to add history that I can scroll up through using up/down arrows and  maybe page up/down
-	- would even be nice to add arrows for moving back and forth on line?
+	- would even be nice to add arrows for moving back and forth on line? (no)
 	- also need to disable space, backspace, etc. from affecting browser window
 
 	Game interface
@@ -32,14 +30,18 @@
 	  
 */
 
-var xOffSet = 8;
-var lineHeight = 26;
-var fontSize = 26;  //26
+//Set these to configure how editor works
+var xOffSet = 8;       			//Off set to take into account canvases position on webpage
+var fontSize = 26;  			//Font size
+var lineHeight = fontSize;  	//Line height. Set to equal font right now. for more padding, you can increase this
+var fontType = "monospace";     //font type. Must use a monospace font or cursor will not track correctly!
+var prompt = ">>";             	//Sets the prompt text 
 
+//More variables. Do not change!
 var body = document.querySelector('body');
 var terminal = document.getElementById('terminal');
 var canvas = document.getElementById('canvas');
-var prompt = ">>";
+
 var keyBuffer = [prompt];
 var text = prompt;
 var ctx = canvas.getContext("2d");
@@ -47,7 +49,7 @@ var ctx = canvas.getContext("2d");
 var cursorX = 0,
 	cursorY = 0;
 
-canvasInit();
+canvasInit();  //Initialize the canvas
 
 //Backspace listener that deletes current text
 //  This has to be added her to prevent the browser default from activating backpage
@@ -141,49 +143,41 @@ function canvasInit(){
 
 	ctx.fillStyle = 'green';
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+	drawText(keyBuffer)
 	//window.requestAnimationFrame(drawCursor);
 }
 
 //draw text
 function drawText(keyBuffer){
-		
-		var fontType = "monospace";
-		
 
-		ctx.fillStyle = 'green';
-		ctx.fillRect(0, 0, canvas.width, canvas.height);
+	//Redraw canvas background to erase current text and images	
+	ctx.fillStyle = 'green';
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-		ctx.font = fontSize + "px " + fontType;
-		ctx.fillStyle = 'black';
+	//Set font size, type, and color
+	ctx.font = fontSize + "px " + fontType;
+	ctx.fillStyle = 'black';
 
-		for(var i = 0; i <= keyBuffer.length-1; i++) {
-			ctx.fillText(keyBuffer[i], 0, lineHeight * (i + 1));
-			//console.log("looping:", i);	
-		}
+	//Draw contents of keyBuffer onto canvas
+	for(var i = 0; i <= keyBuffer.length-1; i++) {
+		ctx.fillText(keyBuffer[i], 0, lineHeight * (i + 1));
+	}
 
-
-		//console.log(keyBuffer[keyBuffer.length - 1].length);
-
-		cursorX = ((keyBuffer[keyBuffer.length - 1].length + 1) * (fontSize * 0.55)) - (xOffSet);
-		//cursorY = (((keyBuffer.length-1) * lineHeight) + (lineHeight/2)) + 2;
-		cursorY  = ((keyBuffer.length-1) * lineHeight) + (lineHeight);
-		//console.log(cursorX, cursorY);
-		ctx.fillStyle = 'white';
-		ctx.fillRect(cursorX, cursorY, fontSize * 0.55, 2);
-
-		/*Draw cursor at end of line -
-		   1. calculate x position based on length of last keyBuffer line * font size?
-		   2. calculate y position based on length of keyBuffer (i.e. number of lines) * line height
-		*/
-		
+	//Draw the cursor
+	drawCursor(keyBuffer);
+	
 }
 
-function drawCursor(){
+
+//Draw cursor at end of line -
+	// 1. calculate x position based on length of last keyBuffer line * font size?
+	// 2. calculate y position based on length of keyBuffer (i.e. number of lines) * line height
+function drawCursor(keyBuffer){
+	cursorX = ((keyBuffer[keyBuffer.length - 1].length + 1) * (fontSize * 0.55)) - (xOffSet);
+	cursorY  = ((keyBuffer.length-1) * lineHeight) + (lineHeight);
 	ctx.fillStyle = 'white';
-	ctx.fillRect(0,30, 10, 10);
+	ctx.fillRect(cursorX, cursorY, fontSize * 0.55, 2);	
 }
-
 	
 
 
