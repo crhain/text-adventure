@@ -2,18 +2,39 @@
 
 
 /*
-	- Need to add Cursor to show current text position
+	Basic terminal
 	- Need to add word wrap so that words don't get split
 	- Need to add backspace and delete
+	- need to add text scrolling at bottom of screen
+	  o would also be nice to add history that I can scroll up through using up/down arrows and  maybe page up/down
 	- would even be nice to add arrows for moving back and forth on line?
 	- also need to disable space, backspace, etc. from affecting browser window
+
+	Game interface
+	- divide terminal into display window and input window
+	- may also add in capability to change configuration based on scene
+	   1. full screen display
+	   2. display with cursor and selections
+	   3. speech display window with portraits of current speaker, option selection window in bottom and speech display in top
+	   4. cutscene screen to display graphics
+	   5. posibly add in some ui elements
+
+
+	Polish/Animations/Effects
 	- possibly add blinking cursor  
+	- add text wavering effect
+	- add monochromatic effect
+    - add some other effect filters
+
+    Responsivness
+    - can resize browser window, which resizes html canvas
+    - as canvas shrinks, font-size shrinks and text is redistirbuted to fit
 	  
 */
 
 var xOffSet = 8;
 var lineHeight = 26;
-var fontSize = 26;
+var fontSize = 26;  //26
 
 var body = document.querySelector('body');
 var terminal = document.getElementById('terminal');
@@ -28,19 +49,44 @@ var cursorX = 0,
 
 canvasInit();
 
+//Backspace listener that deletes current text
+//  This has to be added her to prevent the browser default from activating backpage
+body.addEventListener('keydown', function(key){
+	if(key.which == 8) {
+		key.preventDefault();
+
+		//only delete a character if we are not at the prompt
+		if(text.length > prompt.length){
+			text = text.slice(0, -1);
+			keyBuffer[keyBuffer.length - 1] = text;
+			drawText(keyBuffer);			
+		}
+		
+	}
+		 
+});
 
 //set up key capture event
 body.addEventListener('keypress', function(key){
+	//Declare some basic variables
 	var charSize = fontSize * 0.55;
-	var lineCharLength = Math.round(canvas.width / charSize - (charSize));
+	var margin = 2;
+	var lineCharLength = Math.round(canvas.width / charSize - margin);
 	var pos = lineCharLength;
 	var temp;
-	text += String.fromCharCode(key.which);
-	if(key.which == 13){
+	//Decalre some utility functions
 
-	}
+
 	//implimentation of a line buffer to display multiple lines of text
 	//Just need a word wrap function now
+	
+	//If any key other than backspace was pressed, add character to text of current line
+	if(key.which != 8) {
+		text += String.fromCharCode(key.which);
+
+	}
+	
+
 	if(key.which == 13){  //If there is a carraige return
 		pos = text.length - 1;
 		temp = prompt
@@ -61,8 +107,8 @@ body.addEventListener('keypress', function(key){
 		console.log("This should not create new lines!");
 		keyBuffer[keyBuffer.length - 1] = text;	
 	}
-		
-		
+
+				
 	drawText(keyBuffer);
 	console.log(keyBuffer);
 	return;
@@ -101,6 +147,7 @@ function drawText(keyBuffer){
 			ctx.fillText(keyBuffer[i], 0, lineHeight * (i + 1));
 			//console.log("looping:", i);	
 		}
+
 
 		console.log(keyBuffer[keyBuffer.length - 1].length);
 
