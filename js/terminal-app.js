@@ -43,8 +43,6 @@ var body = document.querySelector('body');
 function Canvas(width, height, tag) {
 	this.canvas = document.getElementById(tag);	
 	this.ctx = this.canvas.getContext("2d");
-	this.width = this.canvas.width;
-	this.height = this.canvas.height;
 
 	//initialize canvas on creation
 	this.canvas.width = width;
@@ -72,9 +70,27 @@ function Display(displayArea, font, canvas){
 	var charSize = terminal.font.size * 0.55;
 	var margin = 2;
 
-	var displayMaxLines = Math.floor(height / lineHeight);	
-	var lineCharLength = Math.round(width / charSize - margin);
+	var heightInLines = Math.floor(height / lineHeight);	
+	var widthInChars = Math.round(width / charSize - margin);
 	*/
+}
+
+//-----------------------------------------------------------------------------------------------
+//DISPLAY: init method
+//-----------------------------------------------------------------------------------------------
+//sets up some key variables on the display: these cannot be declared in the contructor
+//Inputs: 
+//			None
+//
+//	Outputs:
+//			None
+//------------------------------------------------------------------------------------------------
+Display.prototype.init = function(){
+	var charSize = this.font.size * 0.55;
+	var margin = 2;
+	this.widthInChars = Math.round(this.display.width / charSize - margin);            //var widthInChars
+	this.heightInLines = Math.floor(this.display.height / this.font.size);                 //var heightInLines
+		
 }
 
 
@@ -109,10 +125,12 @@ Display.prototype.drawText = function(text){
 	var charSize = terminal.font.size * 0.55;
 	var margin = 2;
 
-	var displayMaxLines = Math.floor(height / lineHeight);	
-	var lineCharLength = Math.round(width / charSize - margin);
+	//Have to declare these here because these will set themselves properly when calling through terminal draw function!
+	var heightInLines = Math.floor(height / fontSize);	
+	var widthInChars = Math.round(width / charSize - margin);
 
-
+	console.log("height=", heightInLines);
+	console.log("width=", widthInChars);
 	//Redraw canvas background to erase current text and images	
 	this.canvas.ctx.fillStyle = background;
 	this.canvas.ctx.fillRect(x, y, width, height);
@@ -128,14 +146,14 @@ Display.prototype.drawText = function(text){
 		excess,
 		currentLineText,
 		newLineText;
-	//console.log("SCREEN LINE SIZE:", lineCharLength);	
+	//console.log("SCREEN LINE SIZE:", widthInChars);	
 
 	//Format the contents of text and add to displayText
 	for(var n=0; n < text.length; n++){
 		//displayText.push(text[i]);
 		currentLineText = text[n];
 
-		if(currentLineText.length <= lineCharLength){  //This adds all lines that were created either with carriage returns or which are less than or equal to line length
+		if(currentLineText.length <= widthInChars){  //This adds all lines that were created either with carriage returns or which are less than or equal to line length
 			//console.log("ADD REGULAR: index:", n, "length:", currentLineText.length);
 			displayText.push(currentLineText);
 		}
@@ -146,14 +164,14 @@ Display.prototype.drawText = function(text){
 		
 			while(currentLineText.length > 0)	{
 				//if the currentLineLength is less than a full line, then just add it
-				if(currentLineText.length <= lineCharLength){
+				if(currentLineText.length <= widthInChars){
 					newLineText = currentLineText;
 					currentLineText = "";
 				}
 				else{ //It is greater than the line character line, so it must be sniped
-					wordWrapOffset = getWordWrapOffset(currentLineText.slice(0, lineCharLength), lineCharLength);
-					newLineText = currentLineText.slice(0, lineCharLength - (wordWrapOffset));
-					currentLineText = currentLineText.slice(lineCharLength - (wordWrapOffset));  //Set currentLineText to remainder of line
+					wordWrapOffset = getWordWrapOffset(currentLineText.slice(0, widthInChars), widthInChars);
+					newLineText = currentLineText.slice(0, widthInChars - (wordWrapOffset));
+					currentLineText = currentLineText.slice(widthInChars - (wordWrapOffset));  //Set currentLineText to remainder of line
 				}
 	
 				//console.log("ADD FULL OVERFLOW: index:", n+nl, "length:", newLineText.length);;  //This code never gets fired
@@ -166,8 +184,8 @@ Display.prototype.drawText = function(text){
 
 
 	//Fit text to display height
-	if(displayText.length > displayMaxLines){
-		var overCount = displayText.length - displayMaxLines;
+	if(displayText.length > heightInLines){
+		var overCount = displayText.length - heightInLines;
 		for(var c = 0; c < overCount; c++){
 			displayText.shift(); //shifts first lines out as text overflows display area
 		}
@@ -184,15 +202,15 @@ Display.prototype.drawText = function(text){
 	this.displayBuffer = displayText;
 
 		
-	function getWordWrapOffset(line, lineCharLength){
+	function getWordWrapOffset(line, widthInChars){
 			//test for break on word and if so, then reset position to space before word
 			var offSet = 0;
-			if(line[lineCharLength-1] != " "){
+			if(line[widthInChars-1] != " "){
 				var spacePos = line.lastIndexOf(" ");
 				console.log("SPACE POS=", spacePos);
 				if(spacePos == -1)
 					return offSet;
-				offSet = (lineCharLength - spacePos) - 1;				
+				offSet = (widthInChars - spacePos) - 1;				
 			}
 
 			console.log("WORD OFFSET=", offSet);
@@ -244,6 +262,12 @@ Terminal.prototype.init = function(){
 	prompt = self.prompt;       //text for prompt
 	var text = prompt;  //this is a temporary string to hold key inputs in listeners
 
+	var charSize = this.font.size * 0.55;
+	var margin = 2;
+	this.widthInChars = Math.round(this.display.width / charSize - margin);            //var widthInChars
+	this.heightInLines = Math.floor(this.display.height / this.font.size);                 //var heightInLines
+
+
 	console.log("initializing terminal!", self.keyBuffer);
 
 
@@ -251,10 +275,11 @@ Terminal.prototype.init = function(){
 	document.addEventListener('keypress', function(key){
 		//Declare some basic variables
 		//console.log('hitting the keys');
-		var charSize = self.font.size * 0.55;
-		var margin = 2;
-		var lineCharLength = Math.round(canvas.width / charSize - margin); //!!!!!might want to move definition of this
-		var pos = lineCharLength;
+		//var charSize = self.font.size * 0.55;
+		//var margin = 2;
+		//var widthInChars = Math.round(canvas.width / charSize - margin); //!!!!!might want to move definition of this
+		var widthInChars = self.widthInChars;
+		var pos = widthInChars;
 		var temp;
 
 
@@ -264,8 +289,8 @@ Terminal.prototype.init = function(){
 			//need to send the commandLine to the engine now
 			self.keyBuffer[self.keyBuffer.length - 1] = text;
 			self.keyBuffer.push(temp);
-			console.log("sending command:", terminal.commandLine);
-			console.log("sending command:", self.commandLine);
+			//console.log("sending command:", terminal.commandLine);
+			//console.log("sending command:", self.commandLine);
 			
 		}
 
@@ -345,7 +370,7 @@ Terminal.prototype.drawText = function(text){
 	//DRAW THE CURSOR OBJECT
 	var cursorX = ((displayText[displayText.length - 1].length + 1) * (fontSize * 0.55)) - (fontSize * 0.55);
 	var cursorY  = ((displayText.length) * lineHeight) + (lineHeight * 0.20); //+ (lineHeight);
-	if(displayText[displayText.length -1].length >= lineCharLength) {
+	if(displayText[displayText.length -1].length >= this.widthInChars) {
 		cursorY += lineHeight;
 		cursorX = 0;
 	}
@@ -372,8 +397,8 @@ var terminal = new Terminal(
 	{
 		x:0,
 		y:0,
-		width:1198,
-		height:798,
+		width:canvas.canvas.width - 2,
+		height:canvas.canvas.height - 2,
 		background:'green'
 	},
 	{
@@ -389,7 +414,5 @@ var terminal = new Terminal(
 terminal.init();
 terminal.drawText(terminal.keyBuffer);
 
-var charSize = self.font.size * 0.55;
-var margin = 2;
-var lineCharLength = Math.round(canvas.width / charSize - margin); //!!!!!might want to move definition of this
+
 
