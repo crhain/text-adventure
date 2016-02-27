@@ -1,15 +1,11 @@
-//set up canvas
-
 
 /*
 	To Do:
-	 1. keyBuffer is array in terminal that holds all entered lines and current non-entered line as last entry
 	 2. drawText method will display all lines in keyBuffer array, while making sure they fit the line. 
-	    If an entry does not fit the line, it will split it and apply word wrap.  Prompts wil not be input.
-	 3. backspace key listener has to be changed so that it will not stop unless it reaches an entered line   
-
-
+	    **** word wrap currently is broken
+	
 	Basic terminal
+	- !!!! Need to fix word wrap
 	- also need to disable space, backspace, etc. from affecting browser window
 
 	Game interface
@@ -46,8 +42,18 @@ function Display(displayArea, font){
 	this.displayBuffer = [];        //holds formated text to be displayed
 };
 
-Display.prototype.drawText = function(text){
+/*
+	DISPLAY: drawText method
+	
+	Inputs: 
+			text = an array of text lines to be displayed
+	Outputs:
+			draws on the canvas.  Currently looks at global variables to get canvas, but can be
+			 updated so that it gets canvas context reference in arguments
+*/
 
+Display.prototype.drawText = function(text){
+	
 	var displayText = [];  //displayText holds formmated lines of text
 
 	var x = this.display.x,
@@ -67,7 +73,6 @@ Display.prototype.drawText = function(text){
 	var displayMaxLines = Math.floor(height / lineHeight);	
 	var lineCharLength = Math.round(width / charSize - margin);
 
-	
 
 	//Redraw canvas background to erase current text and images	
 	ctx.fillStyle = background;
@@ -77,16 +82,9 @@ Display.prototype.drawText = function(text){
 	ctx.font = fontSize + "px " + fontStyle;
 	ctx.fillStyle = fontColor;
 
-	//
-
 	//!!!! Last array entery could be longer than a line or more
 	//     So it needs to be broken up.
-	//     best to create a temporary array for displaying
-	/*
-	if(textBuffer[-1].length > lineCharLength){
-
-	}
-	*/
+	//     best to create a temporary array for displaying	
 	var pos,
 		excess,
 		nNewLines,
@@ -140,7 +138,6 @@ Display.prototype.drawText = function(text){
 		} 
 	}	
 
-	
 
 	//Fit text to display height
 	if(displayText.length > displayMaxLines){
@@ -151,16 +148,11 @@ Display.prototype.drawText = function(text){
 	}
 
 	
-	
-
-	
-
 	//Draw contents of keyBuffer onto canvas
 	for(var i = 0; i <= displayText.length-1; i++) {
 	
 		ctx.fillText(displayText[i], 0, lineHeight * (i + 1));		
 	}	
-
 
 	//set objects displayBuffer to displayText so that it can be accessed outside object
 	this.displayBuffer = displayText;
@@ -179,7 +171,6 @@ Display.prototype.drawText = function(text){
 			return offSet;
 	}
 
-
 };
 	
 
@@ -189,9 +180,6 @@ Display.prototype.drawText = function(text){
 		The terminal displays command input and sends it to the game engine when it is entered
 		It will also temporarily hold display output untill we create a display window object
 */
-
-
-
 function Terminal(displayArea, font){
 
     Display.call(this, displayArea, font);
@@ -199,7 +187,7 @@ function Terminal(displayArea, font){
     	//this.display
     	//this.font
 	this.prompt = ">>";        				//Style of prompt - defined within constructor for now
-	var keyBuffer = [this.prompt];   		//holds lines of text entered by keystroke, creating new entries in the array for carriage returns
+	this.keyBuffer = [this.prompt];   		//holds lines of text entered by keystroke, creating new entries in the array for carriage returns
 	var commandText;         				//holds text for each command. Whenever enter is hit, the last line in keyBuffer is assigned to this
 
 	//Call function to initialize the terminal.
@@ -207,121 +195,36 @@ function Terminal(displayArea, font){
 
 };
 
-Terminal.prototype = Object.create(Display.prototype); //Terminal inherits display methods
+//Set up Terminal object constructor to inheriet methods from Display
+Terminal.prototype = Object.create(Display.prototype); 
 Terminal.prototype.constructor = Terminal;  //gives it correct constructor method
 
 
-//Backspace listener that deletes current text
-//  This has to be added her to prevent the browser default from activating backpage
+/*
+	TERMINAL: init method
+	
+	Sets up event listeners to capture keystrokes and call drawText method to draw them.
+*/
 Terminal.prototype.init = function(){
 	self = this;  //to create a reference to the terminal and not to the item calling the event listener
-	//!!!!!! need to add in event listeners
-	console.log("initializing terminal!", keyBuffer);
-}; 
-
-Terminal.prototype.drawText = function(text){
-
-	//This fancy line is calling the original drawText function defined on Display - but it does not give this function access
-	// to it's variables, so we need to make variables we need public properties on the ojbect :(
-	Object.getPrototypeOf(new Display(this.display, this.font)).drawText.call(this, text);
-
-	//This public property holds the formatted text array used in Display.drawText
-	var displayText = this.displayBuffer;
 	
-	var fontSize = this.font.size,
-		lineHeight = fontSize;
+	keyBuffer = self.keyBuffer; //key buffer holds an array of lines (delimited by carriage returns)
+	prompt = self.prompt;       //text for prompt
+	var text = prompt;  //this is a temporary string to hold key inputs in listeners
 
-	//Draw the cursor
-	var cursorX = ((displayText[displayText.length - 1].length + 1) * (fontSize * 0.55)) - (8);
-	var cursorY  = ((displayText.length-1) * lineHeight) + (lineHeight);
-
-	ctx.fillStyle = 'white';
-	ctx.fillRect(cursorX, cursorY, fontSize * 0.55, 2);	
-
-};
+	console.log("initializing terminal!", keyBuffer);
 
 
-
-
-
-/*
-	UTILITY FUNCTIONS AND GLOBAL VARIABLES FOR CANVAS VIEW
-*/
-
-
-
-
-
-
-
-
-
-
-
-//More variables. Do not change!
-var body = document.querySelector('body');
-//var terminal = document.getElementById('terminal');
-var canvas = document.getElementById('canvas');
-var prompt = ">>";
-var keyBuffer = [prompt];
-var text = prompt;
-var ctx = canvas.getContext("2d");
-
-var cursorX = 0,
-	cursorY = 0;
-
-var displayArea;
-
-canvasInit();  //Initialize the canvas
-
-//Creates terminal object
-var terminal = new Terminal({
-		x:0,
-		y:0,
-		width:1198,
-		height:798,
-		background:'green'
-	},
-	{
-		color:'black',
-		size: 50,
-		style: 'monospace'
-	}
-);
-
-
-//Draw initial text
-terminal.drawText(keyBuffer);
-
-
-body.addEventListener('click', function(mouse){
-	//console.log(mouse.pageX);
-});
-
-
-
-//Add evend listener to capture backspace and prevent default browser action
-	document.addEventListener('keydown', function(key){
-		if(key.which == 8) {
-			key.preventDefault();
-
-			//only delete a character if we are not at the prompt
-			if(text.length > terminal.prompt.length){
-				text = text.slice(0, -1);
-				keyBuffer[keyBuffer.length - 1] = text;
-				terminal.drawText(keyBuffer);			
-			}		
-		}		 
-	});
-
-		//set up key capture event
+	//Add basic key listener event
 	document.addEventListener('keypress', function(key){
 		//Declare some basic variables
+		console.log('hitting the keys');
 		var charSize = terminal.font.size * 0.55;
 		var margin = 2;
-		var lineCharLength = Math.round(canvas.width / charSize - margin);
+		var lineCharLength = Math.round(canvas.width / charSize - margin); //!!!!!might want to move definition of this
 		var pos = lineCharLength;
 		var temp;
+
 		//Decalre some utility functions
 		var addNewLine = function(){
 			keyBuffer[keyBuffer.length - 1] = text;
@@ -348,23 +251,6 @@ body.addEventListener('click', function(mouse){
 			//!!!!!!need to add code that sends line to command interpreter
 			
 		}
-		//If text reaches end of line, make a new line (note: but maybe not a forced carriage return?)
-		/*
-		else if(text.length > lineCharLength) {
-			//get break position
-			pos = lineCharLength + 1;
-			//test for break on word and if so, then reset position to space before word
-			if(text[pos-1] != " "){
-				pos = text.lastIndexOf(" ") + 1;
-				if(pos == 0)
-					pos = lineCharLength;
-			}
-			//slice current line up to break and after, storing stuff after on next line and rest in buffer
-			temp = prompt + text.slice(pos);
-			text = text.slice(0, pos);
-			addNewLine();
-			text = temp;
-		}*/
 		//Add text to end of keybuffer
 		else{
 			//console.log("This should not create new lines!");
@@ -372,37 +258,102 @@ body.addEventListener('click', function(mouse){
 		}
 
 		//Rewdraw console text				
-		terminal.drawText(keyBuffer);
-		//console.log(keyBuffer);
+		self.drawText(keyBuffer);
 		
-	});
+		
+	} );
+
+	//Add evend listener to capture backspace and prevent default browser action
+	document.addEventListener('keydown', function(key){
+		if(key.which == 8) {
+			key.preventDefault();
+
+			//only delete a character if we are not at the prompt
+			if(text.length > prompt.length){
+				text = text.slice(0, -1);
+				keyBuffer[keyBuffer.length - 1] = text;
+				self.drawText(keyBuffer);			
+			}		
+		}		 
+	});	
+
+
+}; 
+
+/*
+	TERMINAL: drawText method
+	Based on: Display.drawText method, adds cursor after text
+*/
+Terminal.prototype.drawText = function(text){
+
+	//This fancy line is calling the original drawText function defined on Display - but it does not give this function access
+	// to it's variables, so we need to make variables we need public properties on the ojbect :(
+	Object.getPrototypeOf(new Display(this.display, this.font)).drawText.call(this, text);
+
+	//This public property holds the formatted text array used in Display.drawText
+	var displayText = this.displayBuffer;
+	
+	var fontSize = this.font.size,
+		lineHeight = fontSize;
+
+	//Draw the cursor
+	var cursorX = ((displayText[displayText.length - 1].length + 1) * (fontSize * 0.55)) - (8);
+	var cursorY  = ((displayText.length-1) * lineHeight) + (lineHeight);
+
+	ctx.fillStyle = 'white';
+	ctx.fillRect(cursorX, cursorY, fontSize * 0.55, 2);	
+
+};
+
+
+
+
+
+/* #####################################################################################################################################################
+   ############################               CANVAS VARIABLES & FUNCTIONS; DECLARE TERMINAL OBJECT
+   #####################################################################################################################################################	
+*/
+
+
+//More variables. Do not change!
+var body = document.querySelector('body');
+var canvas = document.getElementById('canvas');
+var ctx = canvas.getContext("2d");
+
+//var cursorX = 0,
+//	cursorY = 0;
+
+//var displayArea;
+
+canvasInit();  //Initialize the canvas
+
+//Creates terminal object
+var terminal = new Terminal({
+		x:0,
+		y:0,
+		width:1198,
+		height:798,
+		background:'green'
+	},
+	{
+		color:'black',
+		size: 50,
+		style: 'monospace'
+	}
+);
+
+
+//Draw initial text
+terminal.drawText(keyBuffer);
 
 
 //initalize the canvas
 function canvasInit(){
 	canvas.width = 1200;
 	canvas.height = 800;
-	displayArea = {x:0, y:0, width:canvas.width, height:canvas.height, background:'green'};  //Just a temporary display area for terminal drawText function
+	//displayArea = {x:0, y:0, width:canvas.width, height:canvas.height, background:'green'};  //Just a temporary display area for terminal drawText function
 
 	ctx.fillStyle = 'green';
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 	//window.requestAnimationFrame(drawCursor);
 }
-
-//draw text
-/* 
-	Going to change this function so that it
-	   1. takes an object that describes a rectangular area to display the text
-	   2. object is as follows {x: value, y: value, width: value, height: value}
-	   3. If text goes outside the bounds of the display area height (only track that for now)
-	      then alter the text array by shifting out number of elements over verticale lines
-	   4. could move regular line wraping (without enter) to the draw function?
-	        - also, we don't want to send a line as a command untill enter is hit   
-
-*/
-
-
-
-	
-
-
