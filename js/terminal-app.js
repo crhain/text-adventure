@@ -2,10 +2,10 @@
 /*
 	To Do:
 	 2. drawText method will display all lines in keyBuffer array, while making sure they fit the line. 
-	    **** word wrap currently is broken
+	    **** word wrap works except: if I type a word to edge of line and cursor goes to next line and then I hit a space, it will wrap the word instead of adding space to next line?!?!
 	
 	Basic terminal
-	- !!!! Need to fix word wrap
+	
 	- also need to disable space, backspace, etc. from affecting browser window
 
 	Game interface
@@ -88,7 +88,7 @@ Display.prototype.drawText = function(text){
 		excess,
 		currentLineText,
 		newLineText;
-	console.log("SCREEN LINE SIZE:", lineCharLength);	
+	//console.log("SCREEN LINE SIZE:", lineCharLength);	
 
 	//Format the contents of text and add to displayText
 	for(var n=0; n < text.length; n++){
@@ -96,7 +96,7 @@ Display.prototype.drawText = function(text){
 		currentLineText = text[n];
 
 		if(currentLineText.length <= lineCharLength){  //This adds all lines that were created either with carriage returns or which are less than or equal to line length
-			console.log("ADD REGULAR: index:", n, "length:", currentLineText.length);
+			//console.log("ADD REGULAR: index:", n, "length:", currentLineText.length);
 			displayText.push(currentLineText);
 		}
 		else{   //This will parce any line that is longer than the line length
@@ -110,10 +110,8 @@ Display.prototype.drawText = function(text){
 
 				So we have to calculate lines differently.  Basically, we need to keep adding lines as long as currentLineText.length > 0
 			*/
-			var nl = 0;
-			//var nNewLines = Math.ceil(currentLineLength / lineCharLength);  //this should give an accurate number of full and partial lines
-			console.log("PARCING OVERFLOW LINE: length:", currentLineText.length, "nLines:");
-			//for(var nl = 0; nl < nNewLines; nl++){  //adding all new full line segments
+			//var nl = 0;
+			//console.log("PARCING OVERFLOW LINE: length:", currentLineText.length, "nLines:");
 			while(currentLineText.length > 0)	{
 				//if the currentLineLength is less than a full line, then just add it
 				if(currentLineText.length <= lineCharLength){
@@ -122,22 +120,17 @@ Display.prototype.drawText = function(text){
 				}
 				else{ //It is greater than the line character line, so it must be sniped
 					wordWrapOffset = getWordWrapOffset(currentLineText.slice(0, lineCharLength), lineCharLength);
-					newLineText = currentLineText.slice(0, lineCharLength - (wordWrapOffset-1));
-					currentLineText = currentLineText.slice(lineCharLength - (wordWrapOffset-1));  //Set currentLineText to remainder of line
-
+					newLineText = currentLineText.slice(0, lineCharLength - (wordWrapOffset));
+					currentLineText = currentLineText.slice(lineCharLength - (wordWrapOffset));  //Set currentLineText to remainder of line
 				}
 
 				//if the currentLineLength is at least lineCharLength or greater, cut off a segement less or equal to lineCharLength depending on word wraping
 				
-				console.log("ADD FULL OVERFLOW: index:", n+nl, "length:", newLineText.length);;  //This code never gets fired
-				console.log("---Adding:", newLineText);
+				//console.log("ADD FULL OVERFLOW: index:", n+nl, "length:", newLineText.length);;  //This code never gets fired
+				//console.log("---Adding:", newLineText);
 				displayText.push(newLineText);		
-				this.displayBuffer = displayText;
-				nl++;
-				//}				
-				
+				this.displayBuffer = displayText;	
 			}
-
 		} 
 	}	
 
@@ -170,8 +163,9 @@ Display.prototype.drawText = function(text){
 				console.log("SPACE POS=", spacePos);
 				if(spacePos == -1)
 					return offSet;
-				offSet = (lineCharLength - spacePos);				
+				offSet = (lineCharLength - spacePos) - 1;				
 			}
+
 			console.log("WORD OFFSET=", offSet);
 			return offSet;
 	}
@@ -193,7 +187,7 @@ function Terminal(displayArea, font){
     	//this.font
 	this.prompt = ">>";        				//Style of prompt - defined within constructor for now
 	this.keyBuffer = [this.prompt];   		//holds lines of text entered by keystroke, creating new entries in the array for carriage returns
-	var commandText;         				//holds text for each command. Whenever enter is hit, the last line in keyBuffer is assigned to this
+	this.commandLine;         				//holds text for each command. Whenever enter is hit, the last line in keyBuffer is assigned to this
 
 	//Call function to initialize the terminal.
 	this.init();
@@ -213,27 +207,34 @@ Terminal.prototype.constructor = Terminal;  //gives it correct constructor metho
 Terminal.prototype.init = function(){
 	self = this;  //to create a reference to the terminal and not to the item calling the event listener
 	
-	keyBuffer = self.keyBuffer; //key buffer holds an array of lines (delimited by carriage returns)
+	//keyBuffer = self.keyBuffer; //key buffer holds an array of lines (delimited by carriage returns)    ??????????? Why can't I use a variable when setting these variables in this function for used by eventlistner?
+	//commandLine = self.commandLine;  //holds a line of commands to be parced
 	prompt = self.prompt;       //text for prompt
 	var text = prompt;  //this is a temporary string to hold key inputs in listeners
 
-	console.log("initializing terminal!", keyBuffer);
+	console.log("initializing terminal!", self.keyBuffer);
 
 
 	//Add basic key listener event
 	document.addEventListener('keypress', function(key){
 		//Declare some basic variables
-		console.log('hitting the keys');
-		var charSize = terminal.font.size * 0.55;
+		//console.log('hitting the keys');
+		var charSize = self.font.size * 0.55;
 		var margin = 2;
 		var lineCharLength = Math.round(canvas.width / charSize - margin); //!!!!!might want to move definition of this
 		var pos = lineCharLength;
 		var temp;
 
+
 		//Decalre some utility functions
 		var addNewLine = function(){
-			keyBuffer[keyBuffer.length - 1] = text;
-			keyBuffer.push(temp);
+			self.commandLine = text;
+			//need to send the commandLine to the engine now
+			self.keyBuffer[self.keyBuffer.length - 1] = text;
+			self.keyBuffer.push(temp);
+			console.log("sending command:", terminal.commandLine);
+			console.log("sending command:", self.commandLine);
+			
 		}
 
 		//implimentation of a line buffer to display multiple lines of text
@@ -256,14 +257,14 @@ Terminal.prototype.init = function(){
 			//!!!!!!need to add code that sends line to command interpreter
 			
 		}
-		//Add text to end of keybuffer
+		//Add text to end of self.keyBuffer
 		else{
 			//console.log("This should not create new lines!");
-			keyBuffer[keyBuffer.length - 1] = text;	
+			self.keyBuffer[self.keyBuffer.length - 1] = text;	
 		}
 
 		//Rewdraw console text				
-		self.drawText(keyBuffer);
+		self.drawText(self.keyBuffer);
 		
 		
 	} );
@@ -276,8 +277,8 @@ Terminal.prototype.init = function(){
 			//only delete a character if we are not at the prompt
 			if(text.length > prompt.length){
 				text = text.slice(0, -1);
-				keyBuffer[keyBuffer.length - 1] = text;
-				self.drawText(keyBuffer);			
+				self.keyBuffer[self.keyBuffer.length - 1] = text;
+				self.drawText(self.keyBuffer);			
 			}		
 		}		 
 	});	
@@ -305,8 +306,13 @@ Terminal.prototype.drawText = function(text){
 		lineHeight = fontSize;
 
 	//Draw the cursor
-	var cursorX = ((displayText[displayText.length - 1].length + 1) * (fontSize * 0.55)) - (8);
-	var cursorY  = ((displayText.length-1) * lineHeight) + (lineHeight);
+	var cursorX = ((displayText[displayText.length - 1].length + 1) * (fontSize * 0.55)) - (26);
+	var cursorY  = ((displayText.length) * lineHeight) + (10); //+ (lineHeight);
+	if(displayText[displayText.length -1].length >= 42) {
+		cursorY += lineHeight;
+		cursorX = 0;
+	}
+		
 
 	ctx.fillStyle = 'white';
 	ctx.fillRect(cursorX, cursorY, fontSize * 0.55, 2);	
@@ -352,7 +358,7 @@ var terminal = new Terminal({
 
 
 //Draw initial text
-terminal.drawText(keyBuffer);
+terminal.drawText(terminal.keyBuffer);
 
 
 //initalize the canvas
