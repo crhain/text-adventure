@@ -1,5 +1,8 @@
 
-/*
+/* 
+############################################################################################################################################################################################
+############################################################################################################################################################################################
+
 	To Do:
 	 2. drawText method will display all lines in keyBuffer array, while making sure they fit the line. 
 	    **** word wrap works except: if I type a word to edge of line and cursor goes to next line and then I hit a space, it will wrap the word instead of adding space to next line?!?!
@@ -27,30 +30,67 @@
     Responsivness
     - can resize browser window, which resizes html canvas
     - as canvas shrinks, font-size shrinks and text is redistirbuted to fit
-	  
+###############################################################################################################################################################################################	  
 */
 
 
-/*
-	DISPLAY OBJECT CONSTRUCTOR FUNCTION
-	  contains basic properties for displaying text
-*/
-function Display(displayArea, font){
+//More variables. Do not change!
+var body = document.querySelector('body');
+
+//############################################################################
+//CANVAS OBJECT DEFINITION
+//============================================================================
+function Canvas(width, height, tag) {
+	this.canvas = document.getElementById(tag);	
+	this.ctx = this.canvas.getContext("2d");
+	this.width = this.canvas.width;
+	this.height = this.canvas.height;
+
+	//initialize canvas on creation
+	this.canvas.width = width;
+	this.canvas.height = height;
+	this.ctx.fillStyle = 'green';
+	this.ctx.fillRect(0, 0, this.width, this.height);
+};
+
+
+
+//############################################################################################################################################
+//DISPLAY OBJECT CONSTRUCTOR FUNCTION
+//============================================================================================================================================
+//contains basic properties for displaying text
+//--------------------------------------------------------------------------------------------------------------------------------------------
+
+function Display(displayArea, font, canvas){
+	this.canvas = canvas;
 	this.display = displayArea;		//{x:pos, y:pos, width:number, height:number, background:color_string} object that defines display
 	this.font = font;				//{color:string, size:integer, style:string} object that defines font
 	this.text = "";					//represents the string of text to be displayed
 	this.displayBuffer = [];        //holds formated text to be displayed - do not use directly. this is a hack so that Terminal.drawText can reference Display.drawText properly
-};
 
-/*
-	DISPLAY: drawText method
-	
-	Inputs: 
-			text = an array of text lines to be displayed
-	Outputs:
-			draws on the canvas.  Currently looks at global variables to get canvas, but can be
-			 updated so that it gets canvas context reference in arguments
-*/
+	/*
+	var charSize = terminal.font.size * 0.55;
+	var margin = 2;
+
+	var displayMaxLines = Math.floor(height / lineHeight);	
+	var lineCharLength = Math.round(width / charSize - margin);
+	*/
+}
+
+
+//-----------------------------------------------------------------------------------------------
+//DISPLAY: drawText method
+//-----------------------------------------------------------------------------------------------
+//contains basic properties for displaying text
+//Inputs: 
+//			text = an array of text lines to be displayed
+//
+//	Outputs:
+//			- draws on the canvas.  Currently looks at global variables to get canvas, but can be
+//			updated so that it gets canvas context reference in arguments
+//------------------------------------------------------------------------------------------------
+
+
 Display.prototype.drawText = function(text){
 	
 	var displayText = [];   //displayText holds formmated lines of text
@@ -74,12 +114,12 @@ Display.prototype.drawText = function(text){
 
 
 	//Redraw canvas background to erase current text and images	
-	ctx.fillStyle = background;
-	ctx.fillRect(x, y, width, height);
+	this.canvas.ctx.fillStyle = background;
+	this.canvas.ctx.fillRect(x, y, width, height);
 
 	//Set font size, type, and color
-	ctx.font = fontSize + "px " + fontStyle;
-	ctx.fillStyle = fontColor;
+	this.canvas.ctx.font = fontSize + "px " + fontStyle;
+	this.canvas.ctx.fillStyle = fontColor;
 
 	//!!!! Last array entery could be longer than a line or more
 	//     So it needs to be broken up.
@@ -100,18 +140,10 @@ Display.prototype.drawText = function(text){
 			displayText.push(currentLineText);
 		}
 		else{   //This will parce any line that is longer than the line length
-			//current line is longer than display width so need to break it up
-			//pos = lineCharLength + 1;
-			//excess = currentLineText.length - lineCharLength;
+			
 			var currentLineLength = currentLineText.length;
-			/*
-				problem with my nNewLine function is it assumes a full line will be full line length (42), but a full line can be less than this.
-				Therefore, it is possible for the algorithim to stop choping up and pushing the line when there is still line to be pushed.
-
-				So we have to calculate lines differently.  Basically, we need to keep adding lines as long as currentLineText.length > 0
-			*/
-			//var nl = 0;
-			//console.log("PARCING OVERFLOW LINE: length:", currentLineText.length, "nLines:");
+		
+		
 			while(currentLineText.length > 0)	{
 				//if the currentLineLength is less than a full line, then just add it
 				if(currentLineText.length <= lineCharLength){
@@ -123,9 +155,7 @@ Display.prototype.drawText = function(text){
 					newLineText = currentLineText.slice(0, lineCharLength - (wordWrapOffset));
 					currentLineText = currentLineText.slice(lineCharLength - (wordWrapOffset));  //Set currentLineText to remainder of line
 				}
-
-				//if the currentLineLength is at least lineCharLength or greater, cut off a segement less or equal to lineCharLength depending on word wraping
-				
+	
 				//console.log("ADD FULL OVERFLOW: index:", n+nl, "length:", newLineText.length);;  //This code never gets fired
 				//console.log("---Adding:", newLineText);
 				displayText.push(newLineText);		
@@ -136,7 +166,6 @@ Display.prototype.drawText = function(text){
 
 
 	//Fit text to display height
-	
 	if(displayText.length > displayMaxLines){
 		var overCount = displayText.length - displayMaxLines;
 		for(var c = 0; c < overCount; c++){
@@ -148,7 +177,7 @@ Display.prototype.drawText = function(text){
 	//Draw contents of keyBuffer onto canvas
 	for(var i = 0; i <= displayText.length-1; i++) {
 	
-		ctx.fillText(displayText[i], 0, lineHeight * (i + 1));		
+		this.canvas.ctx.fillText(displayText[i], 0, lineHeight * (i + 1));		
 	}	
 
 	//set objects displayBuffer to displayText so that it can be accessed outside object
@@ -170,18 +199,19 @@ Display.prototype.drawText = function(text){
 			return offSet;
 	}
 
-};
+}
 	
 
 
-/*
-	TERMINAL OBJECT CONSTRUCTOR FUNCTION
-		The terminal displays command input and sends it to the game engine when it is entered
-		It will also temporarily hold display output untill we create a display window object
-*/
-function Terminal(displayArea, font){
+//############################################################################################################################################
+//TERMINAL OBJECT CONSTRUCTOR FUNCTION
+//============================================================================================================================================
+//The terminal displays command input and sends it to the game engine when it is entered
+//		It will also temporarily hold display output untill we create a display window object
+//--------------------------------------------------------------------------------------------------------------------------------------------
+function Terminal(displayArea, font, canvas){
 
-    Display.call(this, displayArea, font);
+    Display.call(this, displayArea, font, canvas);
     //Inherits the folowing properties from Display:
     	//this.display
     	//this.font
@@ -189,21 +219,23 @@ function Terminal(displayArea, font){
 	this.keyBuffer = [this.prompt];   		//holds lines of text entered by keystroke, creating new entries in the array for carriage returns
 	this.commandLine;         				//holds text for each command. Whenever enter is hit, the last line in keyBuffer is assigned to this
 
-	//Call function to initialize the terminal.
-	this.init();
-
-};
+}
 
 //Set up Terminal object constructor to inheriet methods from Display
 Terminal.prototype = Object.create(Display.prototype); 
 Terminal.prototype.constructor = Terminal;  //gives it correct constructor method
 
 
-/*
-	TERMINAL: init method
-	
-	Sets up event listeners to capture keystrokes and call drawText method to draw them.
-*/
+//-----------------------------------------------------------------------------------------------
+//TERMINAL: init method
+//-----------------------------------------------------------------------------------------------
+//Sets up event listeners to capture keystrokes and call drawText method to draw them.
+//Inputs: 
+//			None
+//
+//	Outputs:
+//			None
+//------------------------------------------------------------------------------------------------
 Terminal.prototype.init = function(){
 	self = this;  //to create a reference to the terminal and not to the item calling the event listener
 	
@@ -284,19 +316,24 @@ Terminal.prototype.init = function(){
 	});	
 
 
-}; 
-
-/*
-	TERMINAL: drawText method
-	Based on: Display.drawText method, adds cursor after text
-*/
+} 
 
 
+//-----------------------------------------------------------------------------------------------
+//TTERMINAL: drawText method
+//-----------------------------------------------------------------------------------------------
+//Based on: Display.drawText method, adds cursor after text
+//Inputs: 
+//			None
+//
+//	Outputs:
+//			None
+//------------------------------------------------------------------------------------------------
 Terminal.prototype.drawText = function(text){
 
 	//This fancy line is calling the original drawText function defined on Display - but it does not give this function access
 	// to it's variables, so we need to make variables we need public properties on the ojbect :(
-	Object.getPrototypeOf(new Display(this.display, this.font)).drawText.call(this, text);
+	Object.getPrototypeOf(new Display(this.display, this.font, this.canvas)).drawText.call(this, text);
 
 	//This public property holds the formatted text array used in Display.drawText
 	var displayText = this.displayBuffer;
@@ -305,44 +342,34 @@ Terminal.prototype.drawText = function(text){
 	var fontSize = this.font.size,
 		lineHeight = fontSize;
 
-	//Draw the cursor
-	var cursorX = ((displayText[displayText.length - 1].length + 1) * (fontSize * 0.55)) - (26);
-	var cursorY  = ((displayText.length) * lineHeight) + (10); //+ (lineHeight);
-	if(displayText[displayText.length -1].length >= 42) {
+	//DRAW THE CURSOR OBJECT
+	var cursorX = ((displayText[displayText.length - 1].length + 1) * (fontSize * 0.55)) - (fontSize * 0.55);
+	var cursorY  = ((displayText.length) * lineHeight) + (lineHeight * 0.20); //+ (lineHeight);
+	if(displayText[displayText.length -1].length >= lineCharLength) {
 		cursorY += lineHeight;
 		cursorX = 0;
 	}
 		
 
-	ctx.fillStyle = 'white';
-	ctx.fillRect(cursorX, cursorY, fontSize * 0.55, 2);	
+	this.canvas.ctx.fillStyle = 'white';
+	this.canvas.ctx.fillRect(cursorX, cursorY, fontSize * 0.55, 2);	
 
-};
-
-
-
+}
 
 
 /* #####################################################################################################################################################
-   ############################               CANVAS VARIABLES & FUNCTIONS; DECLARE TERMINAL OBJECT
+   ############################               MAIN SECTION OF TERMINAL-APP : 
    #####################################################################################################################################################	
 */
 
+//create a new canvas
+// this is required to initialize the other objects as they must take it as a paramater
+var canvas = new Canvas(1200, 600, 'canvas');
 
-//More variables. Do not change!
-var body = document.querySelector('body');
-var canvas = document.getElementById('canvas');
-var ctx = canvas.getContext("2d");
 
-//var cursorX = 0,
-//	cursorY = 0;
-
-//var displayArea;
-
-canvasInit();  //Initialize the canvas
-
-//Creates terminal object
-var terminal = new Terminal({
+//Creates terminal object for inputing text and displaying the text input
+var terminal = new Terminal(
+	{
 		x:0,
 		y:0,
 		width:1198,
@@ -351,23 +378,18 @@ var terminal = new Terminal({
 	},
 	{
 		color:'black',
-		size: 50,
+		size: 20,
 		style: 'monospace'
-	}
+	},
+	canvas
 );
 
 
-//Draw initial text
+//Start Terminal & draw initial text
+terminal.init();
 terminal.drawText(terminal.keyBuffer);
 
+var charSize = self.font.size * 0.55;
+var margin = 2;
+var lineCharLength = Math.round(canvas.width / charSize - margin); //!!!!!might want to move definition of this
 
-//initalize the canvas
-function canvasInit(){
-	canvas.width = 1200;
-	canvas.height = 800;
-	//displayArea = {x:0, y:0, width:canvas.width, height:canvas.height, background:'green'};  //Just a temporary display area for terminal drawText function
-
-	ctx.fillStyle = 'green';
-	ctx.fillRect(0, 0, canvas.width, canvas.height);
-	//window.requestAnimationFrame(drawCursor);
-}
