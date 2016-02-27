@@ -43,10 +43,13 @@ function Display(displayArea, font){
 	this.display = displayArea;		//{x:pos, y:pos, width:number, height:number, background:color_string} object that defines display
 	this.font = font;				//{color:string, size:integer, style:string} object that defines font
 	this.text = "";					//represents the string of text to be displayed
-	//this.displayBuffer = [];
+	this.displayBuffer = [];        //holds formated text to be displayed
 };
 
 Display.prototype.drawText = function(text){
+
+	var displayText = [];  //displayText holds formmated lines of text
+
 	var x = this.display.x,
 		y = this.display.y,
 		width = this.display.width,
@@ -58,7 +61,13 @@ Display.prototype.drawText = function(text){
 
 	var lineHeight = fontSize;
 
+	var charSize = terminal.font.size * 0.55;
+	var margin = 2;
+
 	var displayMaxLines = Math.floor(height / lineHeight);	
+	var lineCharLength = Math.round(width / charSize - margin);
+
+	
 
 	//Redraw canvas background to erase current text and images	
 	ctx.fillStyle = background;
@@ -68,18 +77,107 @@ Display.prototype.drawText = function(text){
 	ctx.font = fontSize + "px " + fontStyle;
 	ctx.fillStyle = fontColor;
 
+	//
+
+	//!!!! Last array entery could be longer than a line or more
+	//     So it needs to be broken up.
+	//     best to create a temporary array for displaying
+	/*
+	if(textBuffer[-1].length > lineCharLength){
+
+	}
+	*/
+	var pos,
+		excess,
+		nNewLines,
+		currentTextLine,
+		fullTextLine;
+	console.log("SCREEN LINE SIZE:", lineCharLength);	
+
+	//Format the contents of text and add to displayText
+	for(var i=0; i < text.length; i++){
+		//displayText.push(text[i]);
+		currentTextLine = text[i];
+
+		if(currentTextLine.length <= lineCharLength){  //This adds all lines that were created either with carriage returns or which are less than or equal to line length
+			console.log("ADD REGULAR: index:", i, "length:", currentTextLine.length);
+			displayText.push(currentTextLine);
+		}
+		else{   //This will parce any line that is longer than the line length
+			//current line is longer than display width so need to break it up
+			//pos = lineCharLength + 1;
+			//excess = currentTextLine.length - lineCharLength;
+			nNewLines = Math.round(text[i].length / lineCharLength);
+			console.log("PARCING OVERFLOW LINE: length:", currentTextLine.length, "nLines:", nNewLines);
+			for(var nl = 0; nl < nNewLines; nl++){  //adding all new full line segments
+				
+				//if(currentTextLine.length >= lineCharLength){  //Add full character length segment (line is large then this) 
+
+					wordWrapOffset = getWordWrapOffset(currentTextLine.slice(0, lineCharLength), lineCharLength);
+
+					fullTextLine = currentTextLine.slice(0, lineCharLength - wordWrapOffset);
+
+
+					//pos = getWordWrapPos(addTextLine, pos);
+					//fullTextLine = currentTextLine.slice(0, pos);
+
+					currentTextLine = currentTextLine.slice(lineCharLength - wordWrapOffset);  //Set currentTextLine to remainder of line
+
+					console.log("ADD FULL OVERFLOW: index:", i+nl, "length:", fullTextLine.length);;  //This code never gets fired
+					console.log("---Adding:", fullTextLine);
+					displayText.push(fullTextLine);		
+
+				//}				
+				
+			}
+
+			//if(currentTextLine.length > 0 && currentTextLine.length < lineCharLength){  //if there is still some text left to add and it is less than a full line, add it
+			if(currentTextLine.length > 0){  //if there is still some text left to add and it is less than a full line, add it
+					console.log("ADD PARTIAL OVERFLOW: index:", i+nl, "length:", currentTextLine.length);;  //This code never gets fired
+					console.log("---Adding:", currentTextLine);
+					displayText.push(currentTextLine);
+			}
+		} 
+	}	
+
+	
+
 	//Fit text to display height
-	if(text.length > displayMaxLines){
-		var overCount = text.length - displayMaxLines;
+	if(displayText.length > displayMaxLines){
+		var overCount = displayText.length - displayMaxLines;
 		for(var c = 0; c < overCount; c++){
-			text.shift(); //shifts first lines out as text overflows display area
+			displayText.shift(); //shifts first lines out as text overflows display area
 		}
 	}
 
+	
+	
+
+	
+
 	//Draw contents of keyBuffer onto canvas
-	for(var i = 0; i <= text.length-1; i++) {
-		ctx.fillText(text[i], 0, lineHeight * (i + 1));
+	for(var i = 0; i <= displayText.length-1; i++) {
+	
+		ctx.fillText(displayText[i], 0, lineHeight * (i + 1));		
 	}	
+
+
+	//set objects displayBuffer to displayText so that it can be accessed outside object
+	this.displayBuffer = displayText;
+
+	function getWordWrapOffset(line, lineCharLength){
+			//test for break on word and if so, then reset position to space before word
+			var offSet = 0;
+			if(line[lineCharLength-1] != " "){
+				var spacePos = line.lastIndexOf(" ");
+				console.log("SPACE POS=", spacePos);
+				if(spacePos == -1)
+					return offSet;
+				offSet = (lineCharLength - spacePos) - 1;				
+			}
+			console.log("WORD OFFSET=", offSet);
+			return offSet;
+	}
 
 
 };
@@ -123,15 +221,20 @@ Terminal.prototype.init = function(){
 
 Terminal.prototype.drawText = function(text){
 
-	//This fancy line is calling the original drawText function defined on Display
+	//This fancy line is calling the original drawText function defined on Display - but it does not give this function access
+	// to it's variables, so we need to make variables we need public properties on the ojbect :(
 	Object.getPrototypeOf(new Display(this.display, this.font)).drawText.call(this, text);
+
+	//This public property holds the formatted text array used in Display.drawText
+	var displayText = this.displayBuffer;
 	
 	var fontSize = this.font.size,
 		lineHeight = fontSize;
 
 	//Draw the cursor
-	var cursorX = ((text[text.length - 1].length + 1) * (fontSize * 0.55)) - (8);
-	var cursorY  = ((text.length-1) * lineHeight) + (lineHeight);
+	var cursorX = ((displayText[displayText.length - 1].length + 1) * (fontSize * 0.55)) - (8);
+	var cursorY  = ((displayText.length-1) * lineHeight) + (lineHeight);
+
 	ctx.fillStyle = 'white';
 	ctx.fillRect(cursorX, cursorY, fontSize * 0.55, 2);	
 
@@ -175,13 +278,13 @@ canvasInit();  //Initialize the canvas
 var terminal = new Terminal({
 		x:0,
 		y:0,
-		width:1200,
-		height:800,
+		width:1198,
+		height:798,
 		background:'green'
 	},
 	{
 		color:'black',
-		size: 20,
+		size: 50,
 		style: 'monospace'
 	}
 );
@@ -246,6 +349,7 @@ body.addEventListener('click', function(mouse){
 			
 		}
 		//If text reaches end of line, make a new line (note: but maybe not a forced carriage return?)
+		/*
 		else if(text.length > lineCharLength) {
 			//get break position
 			pos = lineCharLength + 1;
@@ -260,7 +364,7 @@ body.addEventListener('click', function(mouse){
 			text = text.slice(0, pos);
 			addNewLine();
 			text = temp;
-		}
+		}*/
 		//Add text to end of keybuffer
 		else{
 			//console.log("This should not create new lines!");
