@@ -129,8 +129,8 @@ Display.prototype.drawText = function(text){
 	var heightInLines = Math.floor(height / fontSize);	
 	var widthInChars = Math.round(width / charSize - margin);
 
-	console.log("height=", heightInLines);
-	console.log("width=", widthInChars);
+	//console.log("height=", heightInLines);
+	//console.log("width=", widthInChars);
 	//Redraw canvas background to erase current text and images	
 	this.canvas.ctx.fillStyle = background;
 	this.canvas.ctx.fillRect(x, y, width, height);
@@ -208,13 +208,13 @@ Display.prototype.drawText = function(text){
 			var offSet = 0;
 			if(line[widthInChars-1] != " "){
 				var spacePos = line.lastIndexOf(" ");
-				console.log("SPACE POS=", spacePos);
+				//console.log("SPACE POS=", spacePos);
 				if(spacePos == -1)
 					return offSet;
 				offSet = (widthInChars - spacePos) - 1;				
 			}
 
-			console.log("WORD OFFSET=", offSet);
+			//console.log("WORD OFFSET=", offSet);
 			return offSet;
 	}
 
@@ -258,8 +258,6 @@ Terminal.prototype.constructor = Terminal;  //gives it correct constructor metho
 Terminal.prototype.init = function(){
 	self = this;  //to create a reference to the terminal and not to the item calling the event listener
 	
-	//keyBuffer = self.keyBuffer; //key buffer holds an array of lines (delimited by carriage returns)    ??????????? Why can't I use a variable when setting these variables in this function for used by eventlistner?
-	//commandLine = self.commandLine;  //holds a line of commands to be parced
 	prompt = self.prompt;       //text for prompt
 	var text = prompt;  //this is a temporary string to hold key inputs in listeners
 
@@ -269,16 +267,13 @@ Terminal.prototype.init = function(){
 	this.heightInLines = Math.floor(this.display.height / this.font.size);                 //var heightInLines
 
 
-	console.log("initializing terminal!", self.keyBuffer);
+	//console.log("initializing terminal!", self.keyBuffer);
 
 
 	//Add basic key listener event
 	document.addEventListener('keypress', function(key){
 		//Declare some basic variables
 		//console.log('hitting the keys');
-		//var charSize = self.font.size * 0.55;
-		//var margin = 2;
-		//var widthInChars = Math.round(canvas.width / charSize - margin); //!!!!!might want to move definition of this
 		var widthInChars = self.widthInChars;
 		var pos = widthInChars;
 		var temp;
@@ -295,8 +290,6 @@ Terminal.prototype.init = function(){
 			
 		}
 
-		//implimentation of a line buffer to display multiple lines of text
-		//Just need a word wrap function now
 		
 		//If any key other than backspace was pressed, add character to text of current line
 		if(key.which != 8) {
@@ -400,7 +393,7 @@ var terminal = new Terminal(
 		y:0,
 		width:canvas.canvas.width - 2,
 		height:canvas.canvas.height - 2,
-		background:'green'
+		background:'#517F51'
 	},
 	{
 		color:'black',
