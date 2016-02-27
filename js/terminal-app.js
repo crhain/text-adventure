@@ -7,12 +7,17 @@
 	 2. drawText method will display all lines in keyBuffer array, while making sure they fit the line. 
 	    **** word wrap works except: if I type a word to edge of line and cursor goes to next line and then I hit a space, it will wrap the word instead of adding space to next line?!?!
 	
-	Basic terminal
+	Terminal interface
 	
+	- text scrolling with up/down and/or pageup/pagedown
 	- also need to disable space, backspace, etc. from affecting browser window
+	
+	Display interface
+
+	- add ability to draw images
 
 	Game interface
-	- divide terminal into display window and input window
+    
 	- may also add in capability to change configuration based on scene
 	   1. full screen display
 	   2. display with cursor and selections
@@ -136,13 +141,12 @@ Display.prototype.drawText = function(text){
 
 	//console.log("height=", heightInLines);
 	//console.log("width=", widthInChars);
-	//Redraw canvas background to erase current text and images	
-	this.canvas.ctx.fillStyle = background;
-	this.canvas.ctx.fillRect(x, y, width, height);
 
-	//Set font size, type, and color
-	this.canvas.ctx.font = fontSize + "px " + fontStyle;
-	this.canvas.ctx.fillStyle = fontColor;
+	//Referesh the background color
+	refreshBackground();
+
+	//Refersh background image (or images?) if there are any
+	refreshImage();
 
 	//!!!! Last array entery could be longer than a line or more
 	//     So it needs to be broken up.
@@ -207,7 +211,22 @@ Display.prototype.drawText = function(text){
 	//set objects displayBuffer to displayText so that it can be accessed outside object
 	this.displayBuffer = displayText;
 
-		
+	function refreshBackground(){
+		this.canvas.ctx.fillStyle = background;
+		this.canvas.ctx.fillRect(x, y, width, height);
+
+		//Set font size, type, and color
+		this.canvas.ctx.font = fontSize + "px " + fontStyle;
+		this.canvas.ctx.fillStyle = fontColor;	
+	}
+
+	function refreshImage(){
+
+	}
+
+	
+
+
 	function getWordWrapOffset(line, widthInChars){
 			//test for break on word and if so, then reset position to space before word
 			var offSet = 0;
@@ -398,7 +417,7 @@ var canvas = new Canvas(1200, 600, 'canvas');
 var terminal = new Terminal(
 	{
 		x:0,   //sets x position where terminal display starts
-		y:0,   //sets y position where terminal display starts
+		y:300,   //sets y position where terminal display starts
 		width:canvas.canvas.width - 2,    //sets how wide the terminal display is
 		height:canvas.canvas.height - 2,  //sets how far down the terminal display goes
 		background:'#517F51'              //sets background color: can give word, rgb string, or hex
@@ -417,4 +436,29 @@ terminal.init();
 terminal.drawText(terminal.keyBuffer);
 
 
+var display = new Display(
+	{
+		x:0,
+		y:0,
+		width:canvas.canvas.width - 2,
+		height:canvas.canvas.height - 300,
+		background: '#000000'
+	},
+	{
+		color:'white',
+		size: 36,
+		style: 'helvetica'
+	},
+	canvas
+
+);
+
+display.init();
+display.drawText(["THE DISPLAY ;-)"]);
+/*
+	In addition to different panes and text display, I may also want to draw the following
+	1. UI. Elements
+	2. 
+	
+*/
 
