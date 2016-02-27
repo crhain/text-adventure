@@ -138,24 +138,18 @@ Display.prototype.drawText = function(text){
 				
 			}
 
-			//if(currentLineText.length > 0 && currentLineText.length < lineCharLength){  //if there is still some text left to add and it is less than a full line, add it
-			//if(currentLineText.length > 0){  //if there is still some text left to add and it is less than a full line, add it
-			//		console.log("ADD PARTIAL OVERFLOW: index:", i+nl, "length:", currentLineText.length);;  //This code never gets fired
-			//		console.log("---Adding:", currentLineText);
-			//		displayText.push(currentLineText);
-			//}
 		} 
 	}	
 
 
 	//Fit text to display height
-	/*
+	
 	if(displayText.length > displayMaxLines){
 		var overCount = displayText.length - displayMaxLines;
 		for(var c = 0; c < overCount; c++){
 			displayText.shift(); //shifts first lines out as text overflows display area
 		}
-	}*/
+	}
 
 	
 	//Draw contents of keyBuffer onto canvas
