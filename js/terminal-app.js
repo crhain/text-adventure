@@ -88,8 +88,8 @@ function Display(displayArea, font, canvas){
 Display.prototype.init = function(){
 	var charSize = this.font.size * 0.55;
 	var margin = 2;
-	this.widthInChars = Math.round(this.display.width / charSize - margin);            //var widthInChars
-	this.heightInLines = Math.floor(this.display.height / this.font.size);                 //var heightInLines
+	this.widthInChars = Math.round((this.display.width - this.display.x) / charSize - margin);            //var widthInChars
+	this.heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size);                 //var heightInLines
 		
 }
 
@@ -126,8 +126,13 @@ Display.prototype.drawText = function(text){
 	var margin = 2;
 
 	//Have to declare these here because these will set themselves properly when calling through terminal draw function!
-	var heightInLines = Math.floor(height / fontSize);	
-	var widthInChars = Math.round(width / charSize - margin);
+	//var heightInLines = Math.floor(height - y / fontSize);	
+	//var widthInChars = Math.round(width - x / charSize - margin);
+
+	var widthInChars = Math.round((this.display.width - this.display.x) / charSize - margin);            //var widthInChars
+	var heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size);                 //var heightInLines
+
+	console.log("Line Height is:", heightInLines);
 
 	//console.log("height=", heightInLines);
 	//console.log("width=", widthInChars);
@@ -196,7 +201,7 @@ Display.prototype.drawText = function(text){
 	//Draw contents of keyBuffer onto canvas
 	for(var i = 0; i <= displayText.length-1; i++) {
 	
-		this.canvas.ctx.fillText(displayText[i], 0, lineHeight * (i + 1));		
+		this.canvas.ctx.fillText(displayText[i], x, y + (lineHeight * (i + 1)));		
 	}	
 
 	//set objects displayBuffer to displayText so that it can be accessed outside object
@@ -263,8 +268,8 @@ Terminal.prototype.init = function(){
 
 	var charSize = this.font.size * 0.55;
 	var margin = 2;
-	this.widthInChars = Math.round(this.display.width / charSize - margin);            //var widthInChars
-	this.heightInLines = Math.floor(this.display.height / this.font.size);                 //var heightInLines
+	this.widthInChars = Math.round((this.display.width - this.display.x) / charSize - margin);            //var widthInChars
+	this.heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size);                 //var heightInLines
 
 
 	//console.log("initializing terminal!", self.keyBuffer);
@@ -359,18 +364,21 @@ Terminal.prototype.drawText = function(text){
 
 	
 	var fontSize = this.font.size,
-		lineHeight = fontSize;
-
+		lineHeight = fontSize,
+		x = this.display.x,
+		y = this.display.y;
+		console.log("x:", x);
+		console.log("y:", y);
 	//DRAW THE CURSOR OBJECT
-	var cursorX = ((displayText[displayText.length - 1].length + 1) * (fontSize * 0.55)) - (fontSize * 0.55);
-	var cursorY  = ((displayText.length) * lineHeight) + (lineHeight * 0.20); //+ (lineHeight);
+	var cursorX = x + ((displayText[displayText.length - 1].length + 1) * (fontSize * 0.55)) - (fontSize * 0.55);
+	var cursorY  = y + ((displayText.length) * lineHeight) + (lineHeight * 0.20); //+ (lineHeight);
 	if(displayText[displayText.length -1].length >= this.widthInChars) {
 		cursorY += lineHeight;
-		cursorX = 0;
+		cursorX = x;
 	}
 		
 
-	this.canvas.ctx.fillStyle = 'white';
+	this.canvas.ctx.fillStyle = 'black';
 	this.canvas.ctx.fillRect(cursorX, cursorY, fontSize * 0.55, 2);	
 
 }
@@ -389,18 +397,18 @@ var canvas = new Canvas(1200, 600, 'canvas');
 //Creates terminal object for inputing text and displaying the text input
 var terminal = new Terminal(
 	{
-		x:0,
-		y:0,
-		width:canvas.canvas.width - 2,
-		height:canvas.canvas.height - 2,
-		background:'#517F51'
+		x:0,   //sets x position where terminal display starts
+		y:0,   //sets y position where terminal display starts
+		width:canvas.canvas.width - 2,    //sets how wide the terminal display is
+		height:canvas.canvas.height - 2,  //sets how far down the terminal display goes
+		background:'#517F51'              //sets background color: can give word, rgb string, or hex
 	},
 	{
-		color:'black',
-		size: 20,
-		style: 'monospace'
+		color:'black',                   //sets font color
+		size: 20,                        //sets font size
+		style: 'monospace'               //sets font type (!!!kep it a monospace font type or cursor may not track so well)
 	},
-	canvas
+	canvas                               //reference to canvas object that the terminal appears on.
 );
 
 
