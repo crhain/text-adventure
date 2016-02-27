@@ -107,15 +107,17 @@ Display.prototype.drawText = function(text){
 			//current line is longer than display width so need to break it up
 			//pos = lineCharLength + 1;
 			//excess = currentTextLine.length - lineCharLength;
-			nNewLines = Math.round(text[i].length / lineCharLength);
-			console.log("PARCING OVERFLOW LINE: length:", currentTextLine.length, "nLines:", nNewLines);
-			for(var nl = 0; nl < nNewLines; nl++){  //adding all new full line segments
+			nNewLines = Math.floor(text[i].length / lineCharLength);
+			console.log("PARCING OVERFLOW LINE: length:", currentTextLine.length);
+			for(var ii = 0; ii < nNewLines; ii++){  //adding all new full line segments
+				index = 0;				
 				
 				//if(currentTextLine.length >= lineCharLength){  //Add full character length segment (line is large then this) 
 
 					wordWrapOffset = getWordWrapOffset(currentTextLine.slice(0, lineCharLength), lineCharLength);
 
 					fullTextLine = currentTextLine.slice(0, lineCharLength - wordWrapOffset);
+					
 
 
 					//pos = getWordWrapPos(addTextLine, pos);
@@ -123,7 +125,7 @@ Display.prototype.drawText = function(text){
 
 					currentTextLine = currentTextLine.slice(lineCharLength - wordWrapOffset);  //Set currentTextLine to remainder of line
 
-					console.log("ADD FULL OVERFLOW: index:", i+nl, "length:", fullTextLine.length);;  //This code never gets fired
+					console.log("ADD FULL OVERFLOW: index:", index, "length:", fullTextLine.length);;  //This code never gets fired
 					console.log("---Adding:", fullTextLine);
 					displayText.push(fullTextLine);		
 
@@ -132,11 +134,11 @@ Display.prototype.drawText = function(text){
 			}
 
 			//if(currentTextLine.length > 0 && currentTextLine.length < lineCharLength){  //if there is still some text left to add and it is less than a full line, add it
-			if(currentTextLine.length > 0){  //if there is still some text left to add and it is less than a full line, add it
+			/*if(currentTextLine.length > 0){  //if there is still some text left to add and it is less than a full line, add it
 					console.log("ADD PARTIAL OVERFLOW: index:", i+nl, "length:", currentTextLine.length);;  //This code never gets fired
 					console.log("---Adding:", currentTextLine);
 					displayText.push(currentTextLine);
-			}
+			}*/
 		} 
 	}	
 
