@@ -39,7 +39,7 @@ function Display(displayArea, font){
 	this.display = displayArea;		//{x:pos, y:pos, width:number, height:number, background:color_string} object that defines display
 	this.font = font;				//{color:string, size:integer, style:string} object that defines font
 	this.text = "";					//represents the string of text to be displayed
-	this.displayBuffer = [];        //holds formated text to be displayed
+	this.displayBuffer = [];        //holds formated text to be displayed - do not use directly. this is a hack so that Terminal.drawText can reference Display.drawText properly
 };
 
 /*
@@ -51,10 +51,9 @@ function Display(displayArea, font){
 			draws on the canvas.  Currently looks at global variables to get canvas, but can be
 			 updated so that it gets canvas context reference in arguments
 */
-
 Display.prototype.drawText = function(text){
 	
-	var displayText = [];  //displayText holds formmated lines of text
+	var displayText = [];   //displayText holds formmated lines of text
 
 	var x = this.display.x,
 		y = this.display.y,
@@ -87,65 +86,76 @@ Display.prototype.drawText = function(text){
 	//     best to create a temporary array for displaying	
 	var pos,
 		excess,
-		nNewLines,
-		currentTextLine,
-		fullTextLine;
+		currentLineText,
+		newLineText;
 	console.log("SCREEN LINE SIZE:", lineCharLength);	
 
 	//Format the contents of text and add to displayText
-	for(var i=0; i < text.length; i++){
+	for(var n=0; n < text.length; n++){
 		//displayText.push(text[i]);
-		currentTextLine = text[i];
+		currentLineText = text[n];
 
-		if(currentTextLine.length <= lineCharLength){  //This adds all lines that were created either with carriage returns or which are less than or equal to line length
-			console.log("ADD REGULAR: index:", i, "length:", currentTextLine.length);
-			displayText.push(currentTextLine);
+		if(currentLineText.length <= lineCharLength){  //This adds all lines that were created either with carriage returns or which are less than or equal to line length
+			console.log("ADD REGULAR: index:", n, "length:", currentLineText.length);
+			displayText.push(currentLineText);
 		}
 		else{   //This will parce any line that is longer than the line length
 			//current line is longer than display width so need to break it up
 			//pos = lineCharLength + 1;
-			//excess = currentTextLine.length - lineCharLength;
-			nNewLines = Math.round(text[i].length / lineCharLength);
-			console.log("PARCING OVERFLOW LINE: length:", currentTextLine.length, "nLines:", nNewLines);
-			for(var nl = 0; nl < nNewLines; nl++){  //adding all new full line segments
+			//excess = currentLineText.length - lineCharLength;
+			var currentLineLength = currentLineText.length;
+			/*
+				problem with my nNewLine function is it assumes a full line will be full line length (42), but a full line can be less than this.
+				Therefore, it is possible for the algorithim to stop choping up and pushing the line when there is still line to be pushed.
+
+				So we have to calculate lines differently.  Basically, we need to keep adding lines as long as currentLineText.length > 0
+			*/
+			var nl = 0;
+			//var nNewLines = Math.ceil(currentLineLength / lineCharLength);  //this should give an accurate number of full and partial lines
+			console.log("PARCING OVERFLOW LINE: length:", currentLineText.length, "nLines:");
+			//for(var nl = 0; nl < nNewLines; nl++){  //adding all new full line segments
+			while(currentLineText.length > 0)	{
+				//if the currentLineLength is less than a full line, then just add it
+				if(currentLineText.length <= lineCharLength){
+					newLineText = currentLineText;
+					currentLineText = "";
+				}
+				else{ //It is greater than the line character line, so it must be sniped
+					wordWrapOffset = getWordWrapOffset(currentLineText.slice(0, lineCharLength), lineCharLength);
+					newLineText = currentLineText.slice(0, lineCharLength - (wordWrapOffset-1));
+					currentLineText = currentLineText.slice(lineCharLength - (wordWrapOffset-1));  //Set currentLineText to remainder of line
+
+				}
+
+				//if the currentLineLength is at least lineCharLength or greater, cut off a segement less or equal to lineCharLength depending on word wraping
 				
-				//if(currentTextLine.length >= lineCharLength){  //Add full character length segment (line is large then this) 
-
-					wordWrapOffset = getWordWrapOffset(currentTextLine.slice(0, lineCharLength), lineCharLength);
-
-					fullTextLine = currentTextLine.slice(0, lineCharLength - wordWrapOffset);
-
-
-					//pos = getWordWrapPos(addTextLine, pos);
-					//fullTextLine = currentTextLine.slice(0, pos);
-
-					currentTextLine = currentTextLine.slice(lineCharLength - wordWrapOffset);  //Set currentTextLine to remainder of line
-
-					console.log("ADD FULL OVERFLOW: index:", i+nl, "length:", fullTextLine.length);;  //This code never gets fired
-					console.log("---Adding:", fullTextLine);
-					displayText.push(fullTextLine);		
-
+				console.log("ADD FULL OVERFLOW: index:", n+nl, "length:", newLineText.length);;  //This code never gets fired
+				console.log("---Adding:", newLineText);
+				displayText.push(newLineText);		
+				this.displayBuffer = displayText;
+				nl++;
 				//}				
 				
 			}
 
-			//if(currentTextLine.length > 0 && currentTextLine.length < lineCharLength){  //if there is still some text left to add and it is less than a full line, add it
-			if(currentTextLine.length > 0){  //if there is still some text left to add and it is less than a full line, add it
-					console.log("ADD PARTIAL OVERFLOW: index:", i+nl, "length:", currentTextLine.length);;  //This code never gets fired
-					console.log("---Adding:", currentTextLine);
-					displayText.push(currentTextLine);
-			}
+			//if(currentLineText.length > 0 && currentLineText.length < lineCharLength){  //if there is still some text left to add and it is less than a full line, add it
+			//if(currentLineText.length > 0){  //if there is still some text left to add and it is less than a full line, add it
+			//		console.log("ADD PARTIAL OVERFLOW: index:", i+nl, "length:", currentLineText.length);;  //This code never gets fired
+			//		console.log("---Adding:", currentLineText);
+			//		displayText.push(currentLineText);
+			//}
 		} 
 	}	
 
 
 	//Fit text to display height
+	/*
 	if(displayText.length > displayMaxLines){
 		var overCount = displayText.length - displayMaxLines;
 		for(var c = 0; c < overCount; c++){
 			displayText.shift(); //shifts first lines out as text overflows display area
 		}
-	}
+	}*/
 
 	
 	//Draw contents of keyBuffer onto canvas
@@ -157,6 +167,7 @@ Display.prototype.drawText = function(text){
 	//set objects displayBuffer to displayText so that it can be accessed outside object
 	this.displayBuffer = displayText;
 
+		
 	function getWordWrapOffset(line, lineCharLength){
 			//test for break on word and if so, then reset position to space before word
 			var offSet = 0;
@@ -165,7 +176,7 @@ Display.prototype.drawText = function(text){
 				console.log("SPACE POS=", spacePos);
 				if(spacePos == -1)
 					return offSet;
-				offSet = (lineCharLength - spacePos) - 1;				
+				offSet = (lineCharLength - spacePos);				
 			}
 			console.log("WORD OFFSET=", offSet);
 			return offSet;
@@ -284,6 +295,8 @@ Terminal.prototype.init = function(){
 	TERMINAL: drawText method
 	Based on: Display.drawText method, adds cursor after text
 */
+
+
 Terminal.prototype.drawText = function(text){
 
 	//This fancy line is calling the original drawText function defined on Display - but it does not give this function access
@@ -292,6 +305,7 @@ Terminal.prototype.drawText = function(text){
 
 	//This public property holds the formatted text array used in Display.drawText
 	var displayText = this.displayBuffer;
+
 	
 	var fontSize = this.font.size,
 		lineHeight = fontSize;
