@@ -4,11 +4,13 @@
 ############################################################################################################################################################################################
 
 	To Do:
+	 1. ctx.measureText(string)  ==> this will return the width in pixels of a string.  
+	    Can use this to calculate line width for non-monospace fonts!!!!  Re-write using this instead of the hacked method I use
 	 2. drawText method will display all lines in keyBuffer array, while making sure they fit the line. 
 	    **** word wrap works except: if I type a word to edge of line and cursor goes to next line and then I hit a space, it will wrap the word instead of adding space to next line?!?!
 	
 	Terminal interface
-	
+	- add submitCommand method that takes the following paramaters (commandText, targetObj)  
 	- text scrolling with up/down and/or pageup/pagedown
 	- also need to disable space, backspace, etc. from affecting browser window
 	
