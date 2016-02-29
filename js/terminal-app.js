@@ -131,7 +131,8 @@ Display.prototype.init = function(){
 Display.prototype.drawText = function(text){
 	
 	var formattedText = [];   //formattedText holds formmated lines of text
-
+	var ctx = this.canvas.ctx;
+	
 	var x = this.display.x,
 		y = this.display.y,
 		width = this.display.width,
@@ -151,6 +152,7 @@ Display.prototype.drawText = function(text){
 	//var widthInChars = Math.round(width - x / charSize - margin);
 
 	var widthInChars = Math.round((this.display.width - this.display.x) / charSize - margin);            //var widthInChars
+	var widthInPixels = this.display.width                                                               //if we add in margins, these will have to be figured in.
 	var heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size);                 //var heightInLines
 
 	console.log("Line Height is:", heightInLines);
@@ -174,6 +176,17 @@ Display.prototype.drawText = function(text){
 	//console.log("SCREEN LINE SIZE:", widthInChars);	
 
 	//Format the contents of text and add to formattedText
+
+
+	console.log("The line is", this.canvas.ctx.measureText(text[0]).width, "pixels wide");
+
+	/*
+		1. I want to go through each line of text
+		2. Then I want to get it's actual text width in pixels and see if it is less than or = to the actuall display width
+	*/
+
+
+
 	for(var n=0; n < text.length; n++){
 		//formattedText.push(text[i]);
 		currentLineText = text[n];
@@ -395,26 +408,28 @@ Terminal.prototype.drawText = function(text){
 	Object.getPrototypeOf(new Display(this.display, this.font, this.canvas)).drawText.call(this, text);
 
 	//This public property holds the formatted text array used in Display.drawText
-	var formattedText = this.formattedText;
-
-	
-	var fontSize = this.font.size,
+	var ctx = this.canvas.ctx,
+		fontSize = this.font.size,
 		lineHeight = fontSize,
+		formattedText = this.formattedText,
+		heightInLines = (formattedText.length) * fontSize,
+		widthInPixels = this.display.width,  
 		x = this.display.x,
 		y = this.display.y;
 		//console.log("x:", x);
 		//console.log("y:", y);
 	//DRAW THE CURSOR OBJECT
-	var cursorX = x + ((formattedText[formattedText.length - 1].length + 1) * (fontSize * 0.55)) - (fontSize * 0.55);
-	var cursorY  = y + ((formattedText.length) * lineHeight) + (lineHeight * 0.20); //+ (lineHeight);
-	if(formattedText[formattedText.length -1].length >= this.widthInChars) {
+	//var cursorX = x + ((formattedText[formattedText.length - 1].length + 1) * (fontSize * 0.55)) - (fontSize * 0.55);  //!!!!change once we have new formating
+	var cursorX = x + ctx.measureText(formattedText[formattedText.length - 1]).width; 
+	var cursorY  = y + heightInLines + (lineHeight * 0.20); //+ (lineHeight);
+	if(formattedText[formattedText.length -1].length >= this.widthInPixels) {
 		cursorY += lineHeight;
 		cursorX = x;
 	}
 		
 
-	this.canvas.ctx.fillStyle = 'black';
-	this.canvas.ctx.fillRect(cursorX, cursorY, fontSize * 0.55, 2);	
+	ctx.fillStyle = 'black';
+	ctx.fillRect(cursorX, cursorY, fontSize * 0.55, 2);	
 
 }
 
