@@ -8,8 +8,7 @@
     Overview:
 			- game-data.js (holds games global array and HoH game data)
 			- various game data files for each game
-			- game-display.js  holds constructors for various game display elements
-			- game-engine.js   holds main game logic and starts the whole thing rolling
+			
 
 	Notes:
 		- 
@@ -19,53 +18,32 @@
 		  index.html to load the file
 		- save data will be placed in localStorage
 		- a games global array will hold the names of all json game files to be loaded		
+		- because the game data files are so massive, I might want to create a parser tool (either node.js or python) that:
+		   - parses text from multiple files
+		   - parses text written in a more user-friendly style with xml like tags?
+		   - writes output to a text file in json format.  This can then be saved as a game-data.js file and loaded into index.html
 
 ###############################################################################################################################################################################################	  
 */
 
-var game = ( function(global){
 
-	init();  //Starts the game
+//DEFINE ALL GAME DATA FILES HERE
 
-	
-
-	//main game loop
-	function main(){
-		/*
-			1. draw display text
-			2. get current command and send to interpreter
-			3. animation loop calling main (or just inside while loop for now)
-		*/
-	}
-
-	//Initialize the canvas, display, and game
-	function init(){
-
-		/*
-			
-		*/
-
-		main(); //Starts main loop
-	}
-
-	//core game logic here. Gets command text, parces it, and then runs various commands
-	function commandInterpreter(commandText){
-
-	}
-
-
-	//handels moving between scenes (only one scene right now)
-	//  instead of a function, we could create objects representing scenes and store them
-	//  inside of a sceneManager object...
-	function sceneManager(){
-
-	}
+var HoH = {
+	rooms: [],
+	items: [],
+	mobiles: []
+	dialog: []
+};
 
 
 
-} )(this);
+//################################################################################################################################################################################
+
+var games = [HoH];  //This holds the variable names referencing each game json file.
 
 
+//################################################################################################################################################################################
 
 
 

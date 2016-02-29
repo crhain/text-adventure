@@ -8,6 +8,7 @@
 	    Can use this to calculate line width for non-monospace fonts!!!!  Re-write using this instead of the hacked method I use
 	 2. drawText method will display all lines in keyBuffer array, while making sure they fit the line. 
 	    **** word wrap works except: if I type a word to edge of line and cursor goes to next line and then I hit a space, it will wrap the word instead of adding space to next line?!?!
+	 3. My have to create seperate drawText methods for display and terminal because terminal gets it's data from keybuffer and display does not
 	
 	Terminal interface
 	- add submitCommand method that takes the following paramaters (commandText, targetObj)  
@@ -71,7 +72,7 @@ function Display(displayArea, font, canvas){
 	this.display = displayArea;		//{x:pos, y:pos, width:number, height:number, background:color_string} object that defines display
 	this.font = font;				//{color:string, size:integer, style:string} object that defines font
 	this.text = "";					//represents the string of text to be displayed
-	this.displayBuffer = [];        //holds formated text to be displayed - do not use directly. this is a hack so that Terminal.drawText can reference Display.drawText properly
+	this.displayBuffer = [];        //holds formated text to be displayed - do not use directly. this is a hack so that Terminal.drawText can reference Display.drawText properly. should call this something else?
 
 	/*
 	var charSize = terminal.font.size * 0.55;
@@ -388,8 +389,8 @@ Terminal.prototype.drawText = function(text){
 		lineHeight = fontSize,
 		x = this.display.x,
 		y = this.display.y;
-		console.log("x:", x);
-		console.log("y:", y);
+		//console.log("x:", x);
+		//console.log("y:", y);
 	//DRAW THE CURSOR OBJECT
 	var cursorX = x + ((displayText[displayText.length - 1].length + 1) * (fontSize * 0.55)) - (fontSize * 0.55);
 	var cursorY  = y + ((displayText.length) * lineHeight) + (lineHeight * 0.20); //+ (lineHeight);
@@ -419,7 +420,7 @@ var canvas = new Canvas(1200, 600, 'canvas');
 var terminal = new Terminal(
 	{
 		x:0,   //sets x position where terminal display starts
-		y:300,   //sets y position where terminal display starts
+		y:400,   //sets y position where terminal display starts
 		width:canvas.canvas.width - 2,    //sets how wide the terminal display is
 		height:canvas.canvas.height - 2,  //sets how far down the terminal display goes
 		background:'#517F51'              //sets background color: can give word, rgb string, or hex
@@ -443,13 +444,13 @@ var display = new Display(
 		x:0,
 		y:0,
 		width:canvas.canvas.width - 2,
-		height:canvas.canvas.height - 300,
-		background: '#000000'
+		height:canvas.canvas.height - 200,
+		background: 'black'
 	},
 	{
 		color:'white',
 		size: 36,
-		style: 'helvetica'
+		style: 'cursive'
 	},
 	canvas
 
@@ -457,6 +458,8 @@ var display = new Display(
 
 display.init();
 display.drawText(["THE DISPLAY ;-)"]);
+
+
 /*
 	In addition to different panes and text display, I may also want to draw the following
 	1. UI. Elements
