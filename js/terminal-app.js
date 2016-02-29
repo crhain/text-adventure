@@ -73,6 +73,19 @@ function Display(displayArea, font, canvas){
 	this.font = font;				//{color:string, size:integer, style:string} object that defines font
 	this.text = "";					//represents the string of text to be displayed
 	this.displayBuffer = [];        //holds formated text to be displayed - do not use directly. this is a hack so that Terminal.drawText can reference Display.drawText properly. should call this something else?
+	this.formattedText = [];        //This is used by drawText function to format text lines.  It has to be sotred here so that other objects that
+	                                //inherit but modify the drawText function
+
+
+	/*
+		keyboardBuffer = array of lines entered into the keyboard.  Each entry is created by a carriage return
+		displayBuffer = array of lines pushed to the display.  engine just has to call the drawFunction with the displayBuffer as an argument.
+		                   display buffer could be saved on the display object or in the engine.  I think it is better keeping it on the display.
+		                   so to write to it, the engine has to first push text into the display buffer and then send a reference to it in the drawfucntion.
+		                   but we could also set up the drawText to read its own display buffer if nothing is sent to it.
+		formattedLines = array used by drawText function to format the lines of text displayed. This could be declared by the drawText function each time it is run.
+		                 it also has to empty it each time so that it doesn't get duplicate lines filed.  I suppose I could do a comparison to see if lines are already in and only push new lines?
+	*/
 
 	/*
 	var charSize = terminal.font.size * 0.55;
@@ -117,7 +130,7 @@ Display.prototype.init = function(){
 
 Display.prototype.drawText = function(text){
 	
-	var displayText = [];   //displayText holds formmated lines of text
+	var formattedText = [];   //formattedText holds formmated lines of text
 
 	var x = this.display.x,
 		y = this.display.y,
@@ -160,14 +173,14 @@ Display.prototype.drawText = function(text){
 		newLineText;
 	//console.log("SCREEN LINE SIZE:", widthInChars);	
 
-	//Format the contents of text and add to displayText
+	//Format the contents of text and add to formattedText
 	for(var n=0; n < text.length; n++){
-		//displayText.push(text[i]);
+		//formattedText.push(text[i]);
 		currentLineText = text[n];
 
 		if(currentLineText.length <= widthInChars){  //This adds all lines that were created either with carriage returns or which are less than or equal to line length
 			//console.log("ADD REGULAR: index:", n, "length:", currentLineText.length);
-			displayText.push(currentLineText);
+			formattedText.push(currentLineText);
 		}
 		else{   //This will parce any line that is longer than the line length
 			
@@ -188,8 +201,8 @@ Display.prototype.drawText = function(text){
 	
 				//console.log("ADD FULL OVERFLOW: index:", n+nl, "length:", newLineText.length);;  //This code never gets fired
 				//console.log("---Adding:", newLineText);
-				displayText.push(newLineText);		
-				this.displayBuffer = displayText;	
+				formattedText.push(newLineText);		
+				this.displayBuffer = formattedText;	
 			}
 
 		} 
@@ -197,22 +210,22 @@ Display.prototype.drawText = function(text){
 
 
 	//Fit text to display height
-	if(displayText.length > heightInLines){
-		var overCount = displayText.length - heightInLines;
+	if(formattedText.length > heightInLines){
+		var overCount = formattedText.length - heightInLines;
 		for(var c = 0; c < overCount; c++){
-			displayText.shift(); //shifts first lines out as text overflows display area
+			formattedText.shift(); //shifts first lines out as text overflows display area
 		}
 	}
 
 	
 	//Draw contents of keyBuffer onto canvas
-	for(var i = 0; i <= displayText.length-1; i++) {
+	for(var i = 0; i <= formattedText.length-1; i++) {
 	
-		this.canvas.ctx.fillText(displayText[i], x, y + (lineHeight * (i + 1)));		
+		this.canvas.ctx.fillText(formattedText[i], x, y + (lineHeight * (i + 1)));		
 	}	
 
-	//set objects displayBuffer to displayText so that it can be accessed outside object
-	this.displayBuffer = displayText;
+	//set objects displayBuffer to formattedText so that it can be accessed outside object
+	this.formattedText = formattedText;
 
 	function refreshBackground(){
 		this.canvas.ctx.fillStyle = background;
@@ -382,7 +395,7 @@ Terminal.prototype.drawText = function(text){
 	Object.getPrototypeOf(new Display(this.display, this.font, this.canvas)).drawText.call(this, text);
 
 	//This public property holds the formatted text array used in Display.drawText
-	var displayText = this.displayBuffer;
+	var formattedText = this.formattedText;
 
 	
 	var fontSize = this.font.size,
@@ -392,9 +405,9 @@ Terminal.prototype.drawText = function(text){
 		//console.log("x:", x);
 		//console.log("y:", y);
 	//DRAW THE CURSOR OBJECT
-	var cursorX = x + ((displayText[displayText.length - 1].length + 1) * (fontSize * 0.55)) - (fontSize * 0.55);
-	var cursorY  = y + ((displayText.length) * lineHeight) + (lineHeight * 0.20); //+ (lineHeight);
-	if(displayText[displayText.length -1].length >= this.widthInChars) {
+	var cursorX = x + ((formattedText[formattedText.length - 1].length + 1) * (fontSize * 0.55)) - (fontSize * 0.55);
+	var cursorY  = y + ((formattedText.length) * lineHeight) + (lineHeight * 0.20); //+ (lineHeight);
+	if(formattedText[formattedText.length -1].length >= this.widthInChars) {
 		cursorY += lineHeight;
 		cursorX = x;
 	}
