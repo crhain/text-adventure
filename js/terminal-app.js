@@ -19,6 +19,14 @@
 	Display interface
 
 	- add ability to format text.. for instance, different color text, font types, and sizes
+	    o add tags for font-weight, color, line break, and possibly alignment; these are similar to html tags
+	    o parced and formated text will go into an array as follows:
+	    [
+			"just some regular text",
+			[["some"],[{color: 'blue'}, "blue"], ["text, and some"], [{color: 'red'}, "red"], ["text"]]
+			"just another regular line.",
+
+	    ];
 	- add ability to draw images
 
 	Game interface
@@ -105,19 +113,35 @@ Display.prototype = Object.create(Object.prototype);
 //			None
 //------------------------------------------------------------------------------------------------
 Display.prototype.init = function(){
-	this.showText("");			
+	this.refreshBackground();		
 }
 
+//draw/refresh the background
+Display.prototype.refreshBackground = function(){
+		this.canvas.ctx.fillStyle = this.display.background;
+		this.canvas.ctx.fillRect(this.display.x, this.display.y, this.display.width, this.display.height);
+	
+}
 
-//Takes a single line of text
+//set the current font on the canvas
+Display.prototype.setFont = function(font){
+	if(font === undefined)
+		font = this.font;
+
+	var fontSize = font.size;
+	var fontColor = font.color;
+	var fontStyle = font.style;
+
+	this.canvas.ctx.font = fontSize + "px " + fontStyle;
+	this.canvas.ctx.fillStyle = fontColor;	
+
+}
+
+//Takes a single line of text, format it, push it to displayBuffer, and then draw the displayBuffer
 Display.prototype.showText = function(text){
 	
 	//set font so that format text works
-	var fontSize = this.font.size,
-		fontColor = this.font.color,
-		fontStyle = this.font.style;
-	this.canvas.ctx.font = fontSize + "px " + fontStyle;
-	this.canvas.ctx.fillStyle = fontColor;	
+	this.setFont();
 	
 	var formattedText = this.formatText(text);
 	
@@ -136,7 +160,7 @@ Display.prototype.addTextToDisplayBuffer = function(text){
 	if(typeof(text) === 'string')
 		text = [text];
 
-	self = this;
+	var self = this;
 
 
 
@@ -185,7 +209,7 @@ Display.prototype.formatText = function(text){
 	//console.log("SCREEN LINE SIZE:", widthInChars);	
 
 	//Format the contents of text and add to formattedText
-	console.log("my font size is:", fontSize);
+	//console.log("my font size is:", fontSize);
 
 	//console.log("The line is", this.canvas.ctx.measureText(text[0]).width, "pixels wide");
 
@@ -201,7 +225,7 @@ Display.prototype.formatText = function(text){
 		var pos = 0;
 		if(lineWidthInPixels <= width){  //If the line width is less or equal to the displays width
 			formattedText.push(currentLineText);	//push the current line into formattedText array
-			console.log("running formatText! width:", width, "pixels:", lineWidthInPixels, "text:", currentLineText);
+			//console.log("running formatText! width:", width, "pixels:", lineWidthInPixels, "text:", currentLineText);
 		}
 		else{
 			//var currentLineLength = currentLineText.length;
@@ -233,14 +257,6 @@ Display.prototype.formatText = function(text){
 	});
 	
 		
-	//Fit text to display height
-	if(formattedText.length > heightInLines){
-		var overCount = formattedText.length - heightInLines;
-		for(var c = 0; c < overCount; c++){
-			formattedText.shift(); //shifts first lines out as text overflows display area
-		}
-	}
-
 	//the position to snip lines at... but it is really inefficent as the line gets longer :(
 	// need a better alogrithim.  Maybe instead of searching backwards, I should either
 	// 1. use a bisecting search
@@ -264,7 +280,7 @@ Display.prototype.formatText = function(text){
 		else if (newLineSize < width){  //newLineSize is less than width, so increment start from current position to end untill it matches
 			//console.log("getSliceIndex <!!!!");
 			for(i; i <= line.length - 1; i++){
-				console.log("getSlice <!!!! index:", i);
+				//console.log("getSlice <!!!! index:", i);
 				newLine = line.slice(0, i);
 				if(ctx.measureText(newLine).width <= width){
 					pos = i;		
@@ -274,13 +290,13 @@ Display.prototype.formatText = function(text){
 			return pos;
 		}
 		else{  //it is greater than so start at its current position and decrement untill it matches
-			console.log("getSliceIndex >!!!! pos:");
+			//console.log("getSliceIndex >!!!! pos:");
 			for(i; i > 0; i--){
 				newLine = line.slice(0, i);
 				if(ctx.measureText(newLine).width <= width){
 					pos = i;
-					console.log("readjusted size:", ctx.measureText(newLine).width);
-					console.log("adding:", newLine);
+					//console.log("readjusted size:", ctx.measureText(newLine).width);
+					//console.log("adding:", newLine);
 					return pos;
 				}
 			}
@@ -337,14 +353,11 @@ Display.prototype.drawText = function(text){
 
 	var lineHeight = fontSize;
 
-	
-
-	
-	
+	var heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size); 
 
 	//Referesh the background color
-	refreshBackground();
-	setFont();
+	this.refreshBackground();
+	this.setFont();
 
 	//Get formated text.  Has to occur after refresh because that sets the font!!!
 	//var formattedText = this.formatText(text);   //formattedText holds formmated lines of text
@@ -352,17 +365,21 @@ Display.prototype.drawText = function(text){
 	//Refersh background image (or images?) if there are any
 	refreshImage();
 
+	//Fit text to display height
+	if(text.length > heightInLines){
+		var overCount = text.length - heightInLines;
+		for(var c = 0; c < overCount; c++){
+			text.shift(); //shifts first lines out as text overflows display area
+		}
+	}
+
 	//Draw contents of keyBuffer onto canvas
 	for(var i = 0; i <= text.length-1; i++) {
 	
 		this.canvas.ctx.fillText(text[i], x, y + (lineHeight * (i + 1)));		
 	}	
 
-	function refreshBackground(){
-		this.canvas.ctx.fillStyle = background;
-		this.canvas.ctx.fillRect(x, y, width, height);
 	
-	}
 
 	function setFont(){
 		//Set font size, type, and color
@@ -447,7 +464,7 @@ Terminal.prototype.init = function(){
 			self.keyBuffer.push(temp);
 			//console.log("sending command:", terminal.commandLine);
 			//console.log("sending command:", self.commandLine);
-			
+			console.log("My number of lines is:", heightInLines);
 		}
 
 		
@@ -513,7 +530,14 @@ Terminal.prototype.drawText = function(text){
 	//This fancy line is calling the original drawText function defined on Display - but it does not give this function access
 	// to it's variables, so we need to make variables we need public properties on the ojbect :(
 	//Object.getPrototypeOf(new Display(this.display, this.font, this.canvas)).drawText.call(this, text);
+		
+
 	
+
+	//Referesh the background color
+	this.refreshBackground();
+	//set font	
+	this.setFont();
 
 	var ctx = this.canvas.ctx,
 		fontSize = this.font.size,
@@ -527,17 +551,27 @@ Terminal.prototype.drawText = function(text){
 		height = this.display.height,
 		background = this.display.background;
 
-	var lineHeight = fontSize;	
-
-	//Referesh the background color
-	refreshBackground();
 
 	var formattedText = this.formatText(text);   //formattedText holds formmated lines of text
-	var heightInLines = (formattedText.length) * fontSize;
+	//var heightInLines = Math.floor((this.display.height - this.display.y) / fontSize);
+	var heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size); 
 
-	//Refersh background image (or images?) if there are any
-	refreshImage();
+	
+	console.log("My draw number of lines is:", heightInLines);
 
+
+	//Get formated text.  Has to occur after refresh because that sets the font!!!
+	//var formattedText = this.formatText(text);   //formattedText holds formmated lines of text
+
+	//Fit text to display height
+	if(formattedText.length > heightInLines){
+		var overCount = formattedText.length - heightInLines;
+		for(var c = 0; c < overCount; c++){
+			formattedText.shift(); //shifts first lines out as text overflows display area
+		}
+	}
+
+	
 	//Draw contents of keyBuffer onto canvas
 	for(var i = 0; i <= formattedText.length-1; i++) {
 	
@@ -547,6 +581,7 @@ Terminal.prototype.drawText = function(text){
 	//set objects displayBuffer to formattedText so that it can be accessed outside object
 	//this.formattedText = formattedText;
 
+	/*
 	function refreshBackground(){
 		this.canvas.ctx.fillStyle = background;
 		this.canvas.ctx.fillRect(x, y, width, height);
@@ -554,18 +589,19 @@ Terminal.prototype.drawText = function(text){
 		//Set font size, type, and color
 		this.canvas.ctx.font = fontSize + "px " + fontStyle;
 		this.canvas.ctx.fillStyle = fontColor;	
-	}
+	}*/
 
 	function refreshImage(){
 
 	}
 
 	//This public property holds the formatted text array used in Display.drawText
-	
+	var lineHeight = fontSize;
+	var cursorLineHeight = (formattedText.length) * lineHeight;
 	
 	//DRAW THE CURSOR OBJECT
 	var cursorX = x + ctx.measureText(formattedText[formattedText.length - 1]).width; 
-	var cursorY  = y + heightInLines + (lineHeight * 0.20); //+ (lineHeight);
+	var cursorY  = y + cursorLineHeight + (lineHeight * 0.20); //+ (lineHeight);
 	if(formattedText[formattedText.length -1].length >= this.widthInPixels) {
 		cursorY += lineHeight;
 		cursorX = x;
