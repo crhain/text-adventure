@@ -18,6 +18,7 @@
 	
 	Display interface
 
+	- add ability to format text.. for instance, different color text, font types, and sizes
 	- add ability to draw images
 
 	Game interface
@@ -283,7 +284,7 @@ Display.prototype.formatText = function(text){
 
 Display.prototype.drawText = function(text){
 	
-	var formattedText = this.formatText(text);   //formattedText holds formmated lines of text
+	
 	//var displayBuffer = this.displayBuffer
 
 	var ctx = this.canvas.ctx;
@@ -301,6 +302,9 @@ Display.prototype.drawText = function(text){
 
 	//Referesh the background color
 	refreshBackground();
+
+	//Get formated text.  Has to occur after refresh because that sets the font!!!
+	var formattedText = this.formatText(text);   //formattedText holds formmated lines of text
 
 	//Refersh background image (or images?) if there are any
 	refreshImage();
@@ -372,7 +376,7 @@ Terminal.prototype.init = function(){
 	var widthInChars = Math.round((this.display.width - this.display.x) / charSize - margin);            //var widthInChars
 	var heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size);                 //var heightInLines
 
-
+	this.drawText(this.keyBuffer);
 	//console.log("initializing terminal!", self.keyBuffer);
 
 
@@ -463,14 +467,13 @@ Terminal.prototype.drawText = function(text){
 	//This fancy line is calling the original drawText function defined on Display - but it does not give this function access
 	// to it's variables, so we need to make variables we need public properties on the ojbect :(
 	//Object.getPrototypeOf(new Display(this.display, this.font, this.canvas)).drawText.call(this, text);
-	var formattedText = this.formatText(text);   //formattedText holds formmated lines of text
+	
 
 	var ctx = this.canvas.ctx,
 		fontSize = this.font.size,
 		fontColor = this.font.color,
 		fontStyle = this.font.style,
 		lineHeight = fontSize,
-		heightInLines = (formattedText.length) * fontSize,
 		widthInPixels = this.display.width,  
 		x = this.display.x,
 		y = this.display.y,
@@ -482,6 +485,9 @@ Terminal.prototype.drawText = function(text){
 
 	//Referesh the background color
 	refreshBackground();
+
+	var formattedText = this.formatText(text);   //formattedText holds formmated lines of text
+	var heightInLines = (formattedText.length) * fontSize;
 
 	//Refersh background image (or images?) if there are any
 	refreshImage();
@@ -540,15 +546,15 @@ var canvas = new Canvas(1200, 600, 'canvas');
 var terminal = new Terminal(
 	{
 		x:0,   //sets x position where terminal display starts
-		y:400,   //sets y position where terminal display starts
+		y:500,   //sets y position where terminal display starts
 		width:canvas.canvas.width,    //sets how wide the terminal display is
 		height:canvas.canvas.height - 2,  //sets how far down the terminal display goes
 		background:'#517F51'              //sets background color: can give word, rgb string, or hex
 	},
 	{
 		color:'black',                   //sets font color
-		size: 26,                        //sets font size
-		style: 'sans-serif'               //sets font type (!!!kep it a monospace font type or cursor may not track so well)
+		size: 20,                        //sets font size
+		style: 'monospace'               //sets font type (!!!kep it a monospace font type or cursor may not track so well)
 	},
 	canvas                               //reference to canvas object that the terminal appears on.
 );
@@ -556,27 +562,27 @@ var terminal = new Terminal(
 
 //Start Terminal & draw initial text
 terminal.init();
-terminal.drawText(terminal.keyBuffer);
+//terminal.drawText(terminal.keyBuffer);
 
-var displayo = new Display(
+var display = new Display(
 	{
 		x:0,
 		y:0,
 		width:canvas.canvas.width,
-		height:canvas.canvas.height - 200,
+		height:canvas.canvas.height - 100,
 		background: 'black'
 	},
 	{
 		color:'white',
 		size: 26,
-		style: 'sans-serif'
+		style: 'cursive'
 	},
 	canvas
 
 );
 
-displayo.init();
-displayo.drawText("You walk into a large room surrounded on all sides by water. To the north is an exit. You see two trolls standing in your way. What do you do?");
+display.init();
+display.drawText("You walk into a large room surrounded on all sides by water. To the north is an exit. You see two trolls standing in your way. What do you do?");
 
 
 
