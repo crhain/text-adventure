@@ -105,7 +105,44 @@ Display.prototype = Object.create(Object.prototype);
 //			None
 //------------------------------------------------------------------------------------------------
 Display.prototype.init = function(){
-			
+	this.showText("");			
+}
+
+
+//Takes a single line of text
+Display.prototype.showText = function(text){
+	
+	//set font so that format text works
+	var fontSize = this.font.size,
+		fontColor = this.font.color,
+		fontStyle = this.font.style;
+	this.canvas.ctx.font = fontSize + "px " + fontStyle;
+	this.canvas.ctx.fillStyle = fontColor;	
+	
+	var formattedText = this.formatText(text);
+	
+	this.addTextToDisplayBuffer(formattedText);
+
+	this.drawText(this.displayBuffer);
+
+
+}
+
+
+
+//Pushes text array to display buffer
+Display.prototype.addTextToDisplayBuffer = function(text){
+	
+	if(typeof(text) === 'string')
+		text = [text];
+
+	self = this;
+
+
+
+	text.forEach(function(currentLine, index){
+		self.displayBuffer.push(currentLine);
+	});
 }
 
 
@@ -300,25 +337,34 @@ Display.prototype.drawText = function(text){
 
 	var lineHeight = fontSize;
 
+	
+
+	
+	
+
 	//Referesh the background color
 	refreshBackground();
+	setFont();
 
 	//Get formated text.  Has to occur after refresh because that sets the font!!!
-	var formattedText = this.formatText(text);   //formattedText holds formmated lines of text
+	//var formattedText = this.formatText(text);   //formattedText holds formmated lines of text
 
 	//Refersh background image (or images?) if there are any
 	refreshImage();
 
 	//Draw contents of keyBuffer onto canvas
-	for(var i = 0; i <= formattedText.length-1; i++) {
+	for(var i = 0; i <= text.length-1; i++) {
 	
-		this.canvas.ctx.fillText(formattedText[i], x, y + (lineHeight * (i + 1)));		
+		this.canvas.ctx.fillText(text[i], x, y + (lineHeight * (i + 1)));		
 	}	
 
 	function refreshBackground(){
 		this.canvas.ctx.fillStyle = background;
 		this.canvas.ctx.fillRect(x, y, width, height);
+	
+	}
 
+	function setFont(){
 		//Set font size, type, and color
 		this.canvas.ctx.font = fontSize + "px " + fontStyle;
 		this.canvas.ctx.fillStyle = fontColor;	
@@ -376,7 +422,7 @@ Terminal.prototype.init = function(){
 	var widthInChars = Math.round((this.display.width - this.display.x) / charSize - margin);            //var widthInChars
 	var heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size);                 //var heightInLines
 
-	this.drawText(this.keyBuffer);
+	this.drawText(self.keyBuffer);
 	//console.log("initializing terminal!", self.keyBuffer);
 
 
@@ -562,7 +608,7 @@ var terminal = new Terminal(
 
 //Start Terminal & draw initial text
 terminal.init();
-//terminal.drawText(terminal.keyBuffer);
+terminal.drawText(terminal.keyBuffer);
 
 var display = new Display(
 	{
@@ -582,7 +628,7 @@ var display = new Display(
 );
 
 display.init();
-display.drawText("You walk into a large room surrounded on all sides by water. To the north is an exit. You see two trolls standing in your way. What do you do?");
+display.showText("You walk into a large room surrounded on all sides by water. To the north is an exit. You see two trolls standing in your way. What do you do?");
 
 
 
