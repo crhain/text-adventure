@@ -54,8 +54,8 @@ function Canvas(width, height, tag) {
 	this.ctx = this.canvas.getContext("2d");
 
 	//initialize canvas on creation
-	this.canvas.width = width;
-	this.canvas.height = height;
+	//this.canvas.width = width;
+	//this.canvas.height = height;
 	this.ctx.fillStyle = 'green';
 	this.ctx.fillRect(0, 0, this.width, this.height);
 };
@@ -74,7 +74,7 @@ function Display(displayArea, font, canvas){
 	this.font = font;				//{color:string, size:integer, style:string} object that defines font
 	this.text = "";					//represents the string of text to be displayed
 	this.displayBuffer = [];        //holds formated text to be displayed - do not use directly. this is a hack so that Terminal.drawText can reference Display.drawText properly. should call this something else?
-	this.formattedText = [];        //This is used by drawText function to format text lines.  It has to be sotred here so that other objects that
+	//this.formattedText = [];        //This is used by drawText function to format text lines.  It has to be sotred here so that other objects that
 	                                //inherit but modify the drawText function
 
 
@@ -88,14 +88,10 @@ function Display(displayArea, font, canvas){
 		                 it also has to empty it each time so that it doesn't get duplicate lines filed.  I suppose I could do a comparison to see if lines are already in and only push new lines?
 	*/
 
-	/*
-	var charSize = terminal.font.size * 0.55;
-	var margin = 2;
-
-	var heightInLines = Math.floor(height / lineHeight);	
-	var widthInChars = Math.round(width / charSize - margin);
-	*/
 }
+
+Display.prototype = Object.create(Object.prototype); 
+//Terminal.prototype.constructor = Terminal;  //gives it correct constructor method
 
 //-----------------------------------------------------------------------------------------------
 //DISPLAY: init method
@@ -108,28 +104,15 @@ function Display(displayArea, font, canvas){
 //			None
 //------------------------------------------------------------------------------------------------
 Display.prototype.init = function(){
-	var charSize = this.font.size * 0.55;
-	var margin = 2;
-	this.widthInChars = Math.round((this.display.width - this.display.x) / charSize - margin);            //var widthInChars
-	this.heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size);                 //var heightInLines
-		
+			
 }
 
 
-//-----------------------------------------------------------------------------------------------
-//DISPLAY: drawText method
-//-----------------------------------------------------------------------------------------------
-//contains basic properties for displaying text
-//Inputs: 
-//			text = an array of text lines to be displayed
-//
-//	Outputs:
-//			- draws on the canvas.  Currently looks at global variables to get canvas, but can be
-//			updated so that it gets canvas context reference in arguments
-//------------------------------------------------------------------------------------------------
+Display.prototype.formatText = function(text){
 
+	if(typeof(text) === 'string')
+		text = [text];
 
-Display.prototype.drawText = function(text){
 	
 	var formattedText = [];   //formattedText holds formmated lines of text
 	var ctx = this.canvas.ctx;
@@ -155,33 +138,16 @@ Display.prototype.drawText = function(text){
 
 	//This is now only being used to estimate how many characters fit in a line.  It is set so that it is large enough so that it will be larger than line.
 	//This helps the line fitting alogrithim to be more efficent since it only has to trim down a smaller line instead of the entier text line.
-	var widthInChars = Math.round((this.display.width - this.display.x) / (terminal.font.size * 0.12) );
+	var widthInChars = Math.round((this.display.width - this.display.x) / (fontSize * 0.12) );
 	var widthInPixels = this.display.width                                                               //if we add in margins, these will have to be figured in.
-	var heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size);                 //var heightInLines
+	var heightInLines = Math.floor((this.display.height - this.display.y) / fontSize);                 //var heightInLines
 
-
-	//console.log("Line Height is:", heightInLines);
-
-	//console.log("height=", heightInLines);
-	console.log("width in chars=", widthInChars);
-
-	//Referesh the background color
-	refreshBackground();
-
-	//Refersh background image (or images?) if there are any
-	refreshImage();
-
-	//!!!! Last array entery could be longer than a line or more
-	//     So it needs to be broken up.
-	//     best to create a temporary array for displaying	
-	var pos,
-		excess,
-		currentLineText,
-		newLineText;
+	
+	var	newLineText;
 	//console.log("SCREEN LINE SIZE:", widthInChars);	
 
 	//Format the contents of text and add to formattedText
-
+	console.log("my font size is:", fontSize);
 
 	//console.log("The line is", this.canvas.ctx.measureText(text[0]).width, "pixels wide");
 
@@ -191,50 +157,43 @@ Display.prototype.drawText = function(text){
 		3. If it is, then I need to break that line into segments and push those to the formattedText array and apply word wrao
 	*/
 
-
-
-	text.forEach(function(currentLineText, index, text){
+	
+	text.forEach(function(currentLineText, index){
 		var lineWidthInPixels = ctx.measureText(currentLineText).width;
 		var pos = 0;
 		if(lineWidthInPixels <= width){  //If the line width is less or equal to the displays width
 			formattedText.push(currentLineText);	//push the current line into formattedText array
+			console.log("running formatText! width:", width, "pixels:", lineWidthInPixels, "text:", currentLineText);
 		}
 		else{
 			//var currentLineLength = currentLineText.length;
 			var testIndex = 0;
-			while(currentLineText.length > 0 && testIndex < 1000){
-				testIndex++;
+			while(currentLineText.length > 0){
+				
 				//console.log("line slicing", testIndex, "times");
 				lineWidthInPixels = ctx.measureText(currentLineText).width;
 				if(lineWidthInPixels <= width){
+
 					//console.log('adding full line! pixel width:', lineWidthInPixels, "display:", width/(fontSize*.55));
 					newLineText = currentLineText;
 					currentLineText = "";	
 				}
-				else{  //Need to modify this code
+				else{ 
 					//before, we could just chop it up by number of characters, but now we have to test each segment
 					//to see if it fits by pixels.  Could figure out average pixel length for font-size and start there.
 					//if it is too small, add additional characters until it is equal or if too big, subtract characters.
 					pos = getSliceIndex(currentLineText, lineWidthInPixels);
-					//console.log("My current slice position is:", pos);
 					wordWrapOffset = getWordWrapOffset(currentLineText.slice(0, pos)); //This corresponds to the new line to be added
 					newLineText = currentLineText.slice(0, pos - (wordWrapOffset));
 					currentLineText = currentLineText.slice(pos - (wordWrapOffset));  //Set currentLineText to remainder of line
-					
-					//console.log("My new text line is:", newLineText);
-					//console.log("My old text line is:", currentLineText);
-					//wordWrapOffset = getWordWrapOffset(currentLineText.slice(0, widthInChars), widthInChars);
-					//newLineText = currentLineText.slice(0, widthInChars - (wordWrapOffset));
-					//currentLineText = currentLineText.slice(widthInChars - (wordWrapOffset));  //Set currentLineText to remainder of line
 				}
 
 				formattedText.push(newLineText);		
-				this.formattedText = formattedText;	
+				//this.formattedText = formattedText;	
 			}
 		}
-
 	});
-
+	
 		
 	//Fit text to display height
 	if(formattedText.length > heightInLines){
@@ -242,29 +201,6 @@ Display.prototype.drawText = function(text){
 		for(var c = 0; c < overCount; c++){
 			formattedText.shift(); //shifts first lines out as text overflows display area
 		}
-	}
-
-	
-	//Draw contents of keyBuffer onto canvas
-	for(var i = 0; i <= formattedText.length-1; i++) {
-	
-		this.canvas.ctx.fillText(formattedText[i], x, y + (lineHeight * (i + 1)));		
-	}	
-
-	//set objects displayBuffer to formattedText so that it can be accessed outside object
-	this.formattedText = formattedText;
-
-	function refreshBackground(){
-		this.canvas.ctx.fillStyle = background;
-		this.canvas.ctx.fillRect(x, y, width, height);
-
-		//Set font size, type, and color
-		this.canvas.ctx.font = fontSize + "px " + fontStyle;
-		this.canvas.ctx.fillStyle = fontColor;	
-	}
-
-	function refreshImage(){
-
 	}
 
 	//the position to snip lines at... but it is really inefficent as the line gets longer :(
@@ -279,16 +215,16 @@ Display.prototype.drawText = function(text){
 		//Take an experimental slice using widthInChars
 		var newLine = line.slice(0, widthInChars);
 		newLineSize = ctx.measureText(newLine).width;
-		console.log("getSliceIndex: newLine chars:", newLine.length, "newLine pixels:", newLineSize, "display pixels:", width);
+		//console.log("getSliceIndex: newLine chars:", newLine.length, "newLine pixels:", newLineSize, "display pixels:", width);
 		var i = newLine.length - 1;
 
 		//Get the measure of that 
 		if(newLineSize == width){  //return current new line length as index becuse it matches!
-			console.log("getSliceIndex =!!!!");
+			//console.log("getSliceIndex =!!!!");
 			pos = newLine.length - 1;
 		}
 		else if (newLineSize < width){  //newLineSize is less than width, so increment start from current position to end untill it matches
-			console.log("getSliceIndex <!!!!");
+			//console.log("getSliceIndex <!!!!");
 			for(i; i <= line.length - 1; i++){
 				console.log("getSlice <!!!! index:", i);
 				newLine = line.slice(0, i);
@@ -300,30 +236,19 @@ Display.prototype.drawText = function(text){
 			return pos;
 		}
 		else{  //it is greater than so start at its current position and decrement untill it matches
-			console.log("getSliceIndex >!!!!");
+			console.log("getSliceIndex >!!!! pos:");
 			for(i; i > 0; i--){
 				newLine = line.slice(0, i);
 				if(ctx.measureText(newLine).width <= width){
 					pos = i;
+					console.log("readjusted size:", ctx.measureText(newLine).width);
+					console.log("adding:", newLine);
 					return pos;
 				}
 			}
 		}
 
 		return pos;
-
-
-		//if(pixelRatio > 0.6) {
-		//	index = Math.round(line.length/2);
-		//}
-		//else
-		for (index; index > 0; index--){
-			newLine = line.slice(0, index);
-			if (ctx.measureText(newLine).width <= width)
-				return index;
-		}
-		
-		return null;  //error!
 
 	}
 
@@ -332,15 +257,72 @@ Display.prototype.drawText = function(text){
 			var offSet = 0;
 			if(line[line.length-1] != " "){
 				var spacePos = line.lastIndexOf(" ");
-				//console.log("SPACE POS=", spacePos);
+		
 				if(spacePos == -1)
 					return offSet;
 				offSet = (line.length - spacePos) - 1;				
 			}
 
-			//console.log("WORD OFFSET=", offSet);
 			return offSet;
 	}
+
+	return formattedText;
+}
+
+//-----------------------------------------------------------------------------------------------
+//DISPLAY: drawText method
+//-----------------------------------------------------------------------------------------------
+//contains basic properties for displaying text
+//Inputs: 
+//			text = an array of text lines to be displayed
+//
+//	Outputs:
+//			- draws on the canvas.  Currently looks at global variables to get canvas, but can be
+//			updated so that it gets canvas context reference in arguments
+//------------------------------------------------------------------------------------------------
+
+Display.prototype.drawText = function(text){
+	
+	var formattedText = this.formatText(text);   //formattedText holds formmated lines of text
+	//var displayBuffer = this.displayBuffer
+
+	var ctx = this.canvas.ctx;
+	
+	var x = this.display.x,
+		y = this.display.y,
+		width = this.display.width,
+		height = this.display.height,
+		background = this.display.background;
+	var fontSize = this.font.size,
+		fontColor = this.font.color,
+		fontStyle = this.font.style;
+
+	var lineHeight = fontSize;
+
+	//Referesh the background color
+	refreshBackground();
+
+	//Refersh background image (or images?) if there are any
+	refreshImage();
+
+	//Draw contents of keyBuffer onto canvas
+	for(var i = 0; i <= formattedText.length-1; i++) {
+	
+		this.canvas.ctx.fillText(formattedText[i], x, y + (lineHeight * (i + 1)));		
+	}	
+
+	function refreshBackground(){
+		this.canvas.ctx.fillStyle = background;
+		this.canvas.ctx.fillRect(x, y, width, height);
+
+		//Set font size, type, and color
+		this.canvas.ctx.font = fontSize + "px " + fontStyle;
+		this.canvas.ctx.fillStyle = fontColor;	
+	}
+
+	function refreshImage(){
+
+	}	
 
 }
 	
@@ -387,8 +369,8 @@ Terminal.prototype.init = function(){
 
 	var charSize = this.font.size * 0.55;
 	var margin = 2;
-	this.widthInChars = Math.round((this.display.width - this.display.x) / charSize - margin);            //var widthInChars
-	this.heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size);                 //var heightInLines
+	var widthInChars = Math.round((this.display.width - this.display.x) / charSize - margin);            //var widthInChars
+	var heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size);                 //var heightInLines
 
 
 	//console.log("initializing terminal!", self.keyBuffer);
@@ -398,7 +380,7 @@ Terminal.prototype.init = function(){
 	document.addEventListener('keypress', function(key){
 		//Declare some basic variables
 		//console.log('hitting the keys');
-		var widthInChars = self.widthInChars;
+		//var widthInChars = self.widthInChars;
 		var pos = widthInChars;
 		var temp;
 
@@ -407,6 +389,10 @@ Terminal.prototype.init = function(){
 		var addNewLine = function(){
 			self.commandLine = text;
 			//need to send the commandLine to the engine now
+
+			//set keybuffer to formattedText to reduce load on drawText
+			//self.keyBuffer = self.formatText(self.keyBuffer);
+
 			self.keyBuffer[self.keyBuffer.length - 1] = text;
 			self.keyBuffer.push(temp);
 			//console.log("sending command:", terminal.commandLine);
@@ -476,22 +462,56 @@ Terminal.prototype.drawText = function(text){
 
 	//This fancy line is calling the original drawText function defined on Display - but it does not give this function access
 	// to it's variables, so we need to make variables we need public properties on the ojbect :(
-	Object.getPrototypeOf(new Display(this.display, this.font, this.canvas)).drawText.call(this, text);
+	//Object.getPrototypeOf(new Display(this.display, this.font, this.canvas)).drawText.call(this, text);
+	var formattedText = this.formatText(text);   //formattedText holds formmated lines of text
 
-	//This public property holds the formatted text array used in Display.drawText
 	var ctx = this.canvas.ctx,
 		fontSize = this.font.size,
+		fontColor = this.font.color,
+		fontStyle = this.font.style,
 		lineHeight = fontSize,
-		formattedText = this.formattedText,
 		heightInLines = (formattedText.length) * fontSize,
 		widthInPixels = this.display.width,  
 		x = this.display.x,
-		y = this.display.y;
-		//console.log("x:", x);
-		//console.log("y:", y);
-	//DRAW THE CURSOR OBJECT
-	//var cursorX = x + ((formattedText[formattedText.length - 1].length + 1) * (fontSize * 0.55)) - (fontSize * 0.55);  //!!!!change once we have new formating
+		y = this.display.y,
+		width = this.display.width,
+		height = this.display.height,
+		background = this.display.background;
+
+	var lineHeight = fontSize;	
+
+	//Referesh the background color
+	refreshBackground();
+
+	//Refersh background image (or images?) if there are any
+	refreshImage();
+
+	//Draw contents of keyBuffer onto canvas
+	for(var i = 0; i <= formattedText.length-1; i++) {
 	
+		this.canvas.ctx.fillText(formattedText[i], x, y + (lineHeight * (i + 1)));		
+	}	
+
+	//set objects displayBuffer to formattedText so that it can be accessed outside object
+	//this.formattedText = formattedText;
+
+	function refreshBackground(){
+		this.canvas.ctx.fillStyle = background;
+		this.canvas.ctx.fillRect(x, y, width, height);
+
+		//Set font size, type, and color
+		this.canvas.ctx.font = fontSize + "px " + fontStyle;
+		this.canvas.ctx.fillStyle = fontColor;	
+	}
+
+	function refreshImage(){
+
+	}
+
+	//This public property holds the formatted text array used in Display.drawText
+	
+	
+	//DRAW THE CURSOR OBJECT
 	var cursorX = x + ctx.measureText(formattedText[formattedText.length - 1]).width; 
 	var cursorY  = y + heightInLines + (lineHeight * 0.20); //+ (lineHeight);
 	if(formattedText[formattedText.length -1].length >= this.widthInPixels) {
@@ -521,14 +541,14 @@ var terminal = new Terminal(
 	{
 		x:0,   //sets x position where terminal display starts
 		y:400,   //sets y position where terminal display starts
-		width:canvas.canvas.width - 2,    //sets how wide the terminal display is
+		width:canvas.canvas.width,    //sets how wide the terminal display is
 		height:canvas.canvas.height - 2,  //sets how far down the terminal display goes
 		background:'#517F51'              //sets background color: can give word, rgb string, or hex
 	},
 	{
 		color:'black',                   //sets font color
 		size: 26,                        //sets font size
-		style: 'helvetica'               //sets font type (!!!kep it a monospace font type or cursor may not track so well)
+		style: 'sans-serif'               //sets font type (!!!kep it a monospace font type or cursor may not track so well)
 	},
 	canvas                               //reference to canvas object that the terminal appears on.
 );
@@ -538,26 +558,30 @@ var terminal = new Terminal(
 terminal.init();
 terminal.drawText(terminal.keyBuffer);
 
-
-var display = new Display(
+var displayo = new Display(
 	{
 		x:0,
 		y:0,
-		width:canvas.canvas.width - 2,
+		width:canvas.canvas.width,
 		height:canvas.canvas.height - 200,
 		background: 'black'
 	},
 	{
 		color:'white',
-		size: 36,
-		style: 'monospace'
+		size: 26,
+		style: 'sans-serif'
 	},
 	canvas
 
 );
 
-display.init();
-display.drawText(["THE DISPLAY ;-)"]);
+displayo.init();
+displayo.drawText("You walk into a large room surrounded on all sides by water. To the north is an exit. You see two trolls standing in your way. What do you do?");
+
+
+
+
+
 
 
 /*
