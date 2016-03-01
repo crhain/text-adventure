@@ -460,10 +460,10 @@ Terminal.prototype.init = function(){
 
 			self.keyBuffer[self.keyBuffer.length - 1] = text;
 			self.keyBuffer.push(temp);
-			self.commands.push(self.keyBuffer[-1]);  //push entered text to commands buffer
+			//self.commands.push(self.keyBuffer[-1]);  //push entered text to commands buffer
 			//console.log("sending command:", terminal.commandLine);
 			//console.log("sending command:", self.commandLine);
-			console.log("My number of lines is:", heightInLines);
+			//console.log("My number of lines is:", heightInLines);
 		}
 
 		
@@ -556,7 +556,7 @@ Terminal.prototype.drawText = function(text){
 	var heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size); 
 
 	
-	console.log("My draw number of lines is:", heightInLines);
+	//console.log("My draw number of lines is:", heightInLines);
 
 
 	//Get formated text.  Has to occur after refresh because that sets the font!!!
@@ -663,7 +663,7 @@ var display = new Display(
 );
 
 display.init();
-//display.showText("You walk into a large room surrounded on all sides by water. To the north is an exit. You see two trolls standing in your way. What do you do?");
+display.showText("You walk into a large room surrounded on all sides by water. To the north is an exit. You see two trolls standing in your way. What do you do?");
 
 
 
