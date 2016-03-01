@@ -155,7 +155,7 @@ Display.prototype.drawText = function(text){
 	var widthInPixels = this.display.width                                                               //if we add in margins, these will have to be figured in.
 	var heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size);                 //var heightInLines
 
-	console.log("Line Height is:", heightInLines);
+	//console.log("Line Height is:", heightInLines);
 
 	//console.log("height=", heightInLines);
 	//console.log("width=", widthInChars);
@@ -178,50 +178,57 @@ Display.prototype.drawText = function(text){
 	//Format the contents of text and add to formattedText
 
 
-	console.log("The line is", this.canvas.ctx.measureText(text[0]).width, "pixels wide");
+	//console.log("The line is", this.canvas.ctx.measureText(text[0]).width, "pixels wide");
 
 	/*
 		1. I want to go through each line of text
 		2. Then I want to get it's actual text width in pixels and see if it is less than or = to the actuall display width
+		3. If it is, then I need to break that line into segments and push those to the formattedText array and apply word wrao
 	*/
 
 
 
-	for(var n=0; n < text.length; n++){
-		//formattedText.push(text[i]);
-		currentLineText = text[n];
-
-		if(currentLineText.length <= widthInChars){  //This adds all lines that were created either with carriage returns or which are less than or equal to line length
-			//console.log("ADD REGULAR: index:", n, "length:", currentLineText.length);
-			formattedText.push(currentLineText);
+	text.forEach(function(currentLineText, index, text){
+		var lineWidthInPixels = ctx.measureText(currentLineText).width;
+		var pos = 0;
+		if(lineWidthInPixels <= width){  //If the line width is less or equal to the displays width
+			formattedText.push(currentLineText);	//push the current line into formattedText array
 		}
-		else{   //This will parce any line that is longer than the line length
-			
-			var currentLineLength = currentLineText.length;
-		
-		
-			while(currentLineText.length > 0)	{
-				//if the currentLineLength is less than a full line, then just add it
-				if(currentLineText.length <= widthInChars){
+		else{
+			//var currentLineLength = currentLineText.length;
+			var testIndex = 0;
+			while(currentLineText.length > 0 && testIndex < 1000){
+				testIndex++;
+				console.log("line slicing", testIndex, "times");
+				lineWidthInPixels = ctx.measureText(currentLineText).width;
+				if(lineWidthInPixels <= width){
+					console.log('adding full line! pixel width:', lineWidthInPixels, "display:", width/(fontSize*.55));
 					newLineText = currentLineText;
-					currentLineText = "";
+					currentLineText = "";	
 				}
-				else{ //It is greater than the line character line, so it must be sniped
-					wordWrapOffset = getWordWrapOffset(currentLineText.slice(0, widthInChars), widthInChars);
-					newLineText = currentLineText.slice(0, widthInChars - (wordWrapOffset));
-					currentLineText = currentLineText.slice(widthInChars - (wordWrapOffset));  //Set currentLineText to remainder of line
+				else{  //Need to modify this code
+					//before, we could just chop it up by number of characters, but now we have to test each segment
+					//to see if it fits by pixels.  Could figure out average pixel length for font-size and start there.
+					//if it is too small, add additional characters until it is equal or if too big, subtract characters.
+					pos = getSliceIndex(currentLineText);
+					console.log("My current slice position is:", pos);
+					newLineText = currentLineText.slice(0, pos);
+					currentLineText = currentLineText.slice(pos);
+					console.log("My new text line is:", newLineText);
+					console.log("My old text line is:", currentLineText);
+					//wordWrapOffset = getWordWrapOffset(currentLineText.slice(0, widthInChars), widthInChars);
+					//newLineText = currentLineText.slice(0, widthInChars - (wordWrapOffset));
+					//currentLineText = currentLineText.slice(widthInChars - (wordWrapOffset));  //Set currentLineText to remainder of line
 				}
-	
-				//console.log("ADD FULL OVERFLOW: index:", n+nl, "length:", newLineText.length);;  //This code never gets fired
-				//console.log("---Adding:", newLineText);
+
 				formattedText.push(newLineText);		
-				this.displayBuffer = formattedText;	
+				this.formattedText = formattedText;	
 			}
+		}
 
-		} 
-	}	
+	});
 
-
+		
 	//Fit text to display height
 	if(formattedText.length > heightInLines){
 		var overCount = formattedText.length - heightInLines;
@@ -253,13 +260,22 @@ Display.prototype.drawText = function(text){
 
 	}
 
-	
+	//returns a tuple with new line and old line
+	function getSliceIndex(line){
+		for (var i = line.length - 1; i > 0; i--){
+			newLine = line.slice(0, i);
+			if (ctx.measureText(newLine).width <= width)
+				return i;
+		}
+		
+		return null;  //error!
 
+	}
 
-	function getWordWrapOffset(line, widthInChars){
+	function getWordWrapOffset(line, widthInPixels){
 			//test for break on word and if so, then reset position to space before word
 			var offSet = 0;
-			if(line[widthInChars-1] != " "){
+			if(line[widthInPixels-1] != " "){
 				var spacePos = line.lastIndexOf(" ");
 				//console.log("SPACE POS=", spacePos);
 				if(spacePos == -1)
@@ -420,6 +436,7 @@ Terminal.prototype.drawText = function(text){
 		//console.log("y:", y);
 	//DRAW THE CURSOR OBJECT
 	//var cursorX = x + ((formattedText[formattedText.length - 1].length + 1) * (fontSize * 0.55)) - (fontSize * 0.55);  //!!!!change once we have new formating
+	
 	var cursorX = x + ctx.measureText(formattedText[formattedText.length - 1]).width; 
 	var cursorY  = y + heightInLines + (lineHeight * 0.20); //+ (lineHeight);
 	if(formattedText[formattedText.length -1].length >= this.widthInPixels) {
@@ -430,7 +447,7 @@ Terminal.prototype.drawText = function(text){
 
 	ctx.fillStyle = 'black';
 	ctx.fillRect(cursorX, cursorY, fontSize * 0.55, 2);	
-
+	
 }
 
 
