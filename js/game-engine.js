@@ -23,52 +23,6 @@
 ###############################################################################################################################################################################################	  
 */
 
-//create a new canvas
-// this is required to initialize the other objects as they must take it as a paramater
-var canvas = new Canvas(1200, 600, 'canvas');
-
-
-//Creates terminal object for inputing text and displaying the text input
-var terminal = new Terminal(
-	{
-		x:0,   //sets x position where terminal display starts
-		y:500,   //sets y position where terminal display starts
-		width:canvas.canvas.width,    //sets how wide the terminal display is
-		height:canvas.canvas.height - 2,  //sets how far down the terminal display goes
-		background:'#517F51'              //sets background color: can give word, rgb string, or hex
-	},
-	{
-		color:'black',                   //sets font color
-		size: 20,                        //sets font size
-		style: 'monospace'               //sets font type (!!!kep it a monospace font type or cursor may not track so well)
-	},
-	canvas                               //reference to canvas object that the terminal appears on.
-);
-
-
-//Start Terminal & draw initial text
-terminal.init();
-terminal.drawText(terminal.keyBuffer); //should call this from terminal.init
-
-var display = new Display(
-	{
-		x:0,
-		y:0,
-		width:canvas.canvas.width,
-		height:canvas.canvas.height - 100,
-		background: 'black'
-	},
-	{
-		color:'white',
-		size: 26,
-		style: 'cursive'
-	},
-	canvas
-
-);
-
-display.init();
-//display.showText("You walk into a large room surrounded on all sides by water. To the north is an exit. You see two trolls standing in your way. What do you do?");
 
 
 
