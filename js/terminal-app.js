@@ -4,8 +4,9 @@
 ############################################################################################################################################################################################
 
 	To Do:
-	 1. ctx.measureText(string)  ==> this will return the width in pixels of a string.  
-	    Can use this to calculate line width for non-monospace fonts!!!!  Re-write using this instead of the hacked method I use
+	 1. ctx.measureText(string)  ==> this will return the width in pixels of a string. 
+		- works... but as the line gets longer, it start to bog down... because it is highly inefficent.  Need new algorithim
+	 
 	 2. drawText method will display all lines in keyBuffer array, while making sure they fit the line. 
 	    **** word wrap works except: if I type a word to edge of line and cursor goes to next line and then I hit a space, it will wrap the word instead of adding space to next line?!?!
 	 3. My have to create seperate drawText methods for display and terminal because terminal gets it's data from keybuffer and display does not
@@ -144,21 +145,25 @@ Display.prototype.drawText = function(text){
 
 	var lineHeight = fontSize;
 
-	var charSize = terminal.font.size * 0.55;
+	//var charSize = terminal.font.size * 0.55;
+	//var charSize = terminal.font.size * 0.25; //I am only
 	var margin = 2;
 
 	//Have to declare these here because these will set themselves properly when calling through terminal draw function!
 	//var heightInLines = Math.floor(height - y / fontSize);	
 	//var widthInChars = Math.round(width - x / charSize - margin);
 
-	var widthInChars = Math.round((this.display.width - this.display.x) / charSize - margin);            //var widthInChars
+	//This is now only being used to estimate how many characters fit in a line.  It is set so that it is large enough so that it will be larger than line.
+	//This helps the line fitting alogrithim to be more efficent since it only has to trim down a smaller line instead of the entier text line.
+	var widthInChars = Math.round((this.display.width - this.display.x) / (terminal.font.size * 0.12) );
 	var widthInPixels = this.display.width                                                               //if we add in margins, these will have to be figured in.
 	var heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size);                 //var heightInLines
+
 
 	//console.log("Line Height is:", heightInLines);
 
 	//console.log("height=", heightInLines);
-	//console.log("width=", widthInChars);
+	console.log("width in chars=", widthInChars);
 
 	//Referesh the background color
 	refreshBackground();
@@ -199,10 +204,10 @@ Display.prototype.drawText = function(text){
 			var testIndex = 0;
 			while(currentLineText.length > 0 && testIndex < 1000){
 				testIndex++;
-				console.log("line slicing", testIndex, "times");
+				//console.log("line slicing", testIndex, "times");
 				lineWidthInPixels = ctx.measureText(currentLineText).width;
 				if(lineWidthInPixels <= width){
-					console.log('adding full line! pixel width:', lineWidthInPixels, "display:", width/(fontSize*.55));
+					//console.log('adding full line! pixel width:', lineWidthInPixels, "display:", width/(fontSize*.55));
 					newLineText = currentLineText;
 					currentLineText = "";	
 				}
@@ -210,12 +215,14 @@ Display.prototype.drawText = function(text){
 					//before, we could just chop it up by number of characters, but now we have to test each segment
 					//to see if it fits by pixels.  Could figure out average pixel length for font-size and start there.
 					//if it is too small, add additional characters until it is equal or if too big, subtract characters.
-					pos = getSliceIndex(currentLineText);
-					console.log("My current slice position is:", pos);
-					newLineText = currentLineText.slice(0, pos);
-					currentLineText = currentLineText.slice(pos);
-					console.log("My new text line is:", newLineText);
-					console.log("My old text line is:", currentLineText);
+					pos = getSliceIndex(currentLineText, lineWidthInPixels);
+					//console.log("My current slice position is:", pos);
+					wordWrapOffset = getWordWrapOffset(currentLineText.slice(0, pos)); //This corresponds to the new line to be added
+					newLineText = currentLineText.slice(0, pos - (wordWrapOffset));
+					currentLineText = currentLineText.slice(pos - (wordWrapOffset));  //Set currentLineText to remainder of line
+					
+					//console.log("My new text line is:", newLineText);
+					//console.log("My old text line is:", currentLineText);
 					//wordWrapOffset = getWordWrapOffset(currentLineText.slice(0, widthInChars), widthInChars);
 					//newLineText = currentLineText.slice(0, widthInChars - (wordWrapOffset));
 					//currentLineText = currentLineText.slice(widthInChars - (wordWrapOffset));  //Set currentLineText to remainder of line
@@ -260,27 +267,75 @@ Display.prototype.drawText = function(text){
 
 	}
 
-	//returns a tuple with new line and old line
+	//the position to snip lines at... but it is really inefficent as the line gets longer :(
+	// need a better alogrithim.  Maybe instead of searching backwards, I should either
+	// 1. use a bisecting search
+	// 2. estimate line length based on number of characters and some sort of average. and then refine
 	function getSliceIndex(line){
-		for (var i = line.length - 1; i > 0; i--){
-			newLine = line.slice(0, i);
+		//take an experimental slice using widthInChars 
+
+		var pos = null;
+
+		//Take an experimental slice using widthInChars
+		var newLine = line.slice(0, widthInChars);
+		newLineSize = ctx.measureText(newLine).width;
+		console.log("getSliceIndex: newLine chars:", newLine.length, "newLine pixels:", newLineSize, "display pixels:", width);
+		var i = newLine.length - 1;
+
+		//Get the measure of that 
+		if(newLineSize == width){  //return current new line length as index becuse it matches!
+			console.log("getSliceIndex =!!!!");
+			pos = newLine.length - 1;
+		}
+		else if (newLineSize < width){  //newLineSize is less than width, so increment start from current position to end untill it matches
+			console.log("getSliceIndex <!!!!");
+			for(i; i <= line.length - 1; i++){
+				console.log("getSlice <!!!! index:", i);
+				newLine = line.slice(0, i);
+				if(ctx.measureText(newLine).width <= width){
+					pos = i;		
+				}
+			}
+
+			return pos;
+		}
+		else{  //it is greater than so start at its current position and decrement untill it matches
+			console.log("getSliceIndex >!!!!");
+			for(i; i > 0; i--){
+				newLine = line.slice(0, i);
+				if(ctx.measureText(newLine).width <= width){
+					pos = i;
+					return pos;
+				}
+			}
+		}
+
+		return pos;
+
+
+		//if(pixelRatio > 0.6) {
+		//	index = Math.round(line.length/2);
+		//}
+		//else
+		for (index; index > 0; index--){
+			newLine = line.slice(0, index);
 			if (ctx.measureText(newLine).width <= width)
-				return i;
+				return index;
 		}
 		
 		return null;  //error!
 
 	}
 
-	function getWordWrapOffset(line, widthInPixels){
+	function getWordWrapOffset(line){
 			//test for break on word and if so, then reset position to space before word
 			var offSet = 0;
-			if(line[widthInPixels-1] != " "){
+			if(line[line.length-1] != " "){
 				var spacePos = line.lastIndexOf(" ");
 				//console.log("SPACE POS=", spacePos);
 				if(spacePos == -1)
 					return offSet;
-				offSet = (widthInChars - spacePos) - 1;				
+				offSet = (line.length - spacePos) - 1;				
 			}
 
 			//console.log("WORD OFFSET=", offSet);
@@ -472,8 +527,8 @@ var terminal = new Terminal(
 	},
 	{
 		color:'black',                   //sets font color
-		size: 20,                        //sets font size
-		style: 'monospace'               //sets font type (!!!kep it a monospace font type or cursor may not track so well)
+		size: 26,                        //sets font size
+		style: 'helvetica'               //sets font type (!!!kep it a monospace font type or cursor may not track so well)
 	},
 	canvas                               //reference to canvas object that the terminal appears on.
 );
@@ -495,7 +550,7 @@ var display = new Display(
 	{
 		color:'white',
 		size: 36,
-		style: 'cursive'
+		style: 'monospace'
 	},
 	canvas
 
