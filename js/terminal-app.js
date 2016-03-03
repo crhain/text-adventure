@@ -407,7 +407,7 @@ function Terminal(displayArea, font, canvas){
     	//this.font
 	this.prompt = ">>";        				//Style of prompt - defined within constructor for now
 	this.keyBuffer = [this.prompt];   		//holds lines of text entered by keystroke, creating new entries in the array for carriage returns
-	this.commands;         				//holds text for each command. Whenever enter is hit, the last line in keyBuffer is assigned to this
+	this.commands = [];         				//holds text for each command. Whenever enter is hit, the last line in keyBuffer is assigned to this
 
 }
 
@@ -436,6 +436,7 @@ Terminal.prototype.init = function(){
 	var margin = 2;
 	var widthInChars = Math.round((this.display.width - this.display.x) / charSize - margin);            //var widthInChars
 	var heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size);                 //var heightInLines
+	
 
 	this.drawText(self.keyBuffer);
 	//console.log("initializing terminal!", self.keyBuffer);
@@ -448,6 +449,7 @@ Terminal.prototype.init = function(){
 		//var widthInChars = self.widthInChars;
 		var pos = widthInChars;
 		var temp;
+		var command = ""; //holds a command to be added to commands array
 
 
 		//Decalre some utility functions
@@ -459,8 +461,10 @@ Terminal.prototype.init = function(){
 			//self.keyBuffer = self.formatText(self.keyBuffer);
 
 			self.keyBuffer[self.keyBuffer.length - 1] = text;
+			command = self.keyBuffer[self.keyBuffer.length -1].slice(2);
 			self.keyBuffer.push(temp);
-			//self.commands.push(self.keyBuffer[-1]);  //push entered text to commands buffer
+
+			self.commands.push(command);  //push entered text to commands buffer
 			//console.log("sending command:", terminal.commandLine);
 			//console.log("sending command:", self.commandLine);
 			//console.log("My number of lines is:", heightInLines);
@@ -618,63 +622,29 @@ Terminal.prototype.drawText = function(text){
    #####################################################################################################################################################	
 */
 
-//create a new canvas
-// this is required to initialize the other objects as they must take it as a paramater
-var canvas = new Canvas(1200, 600, 'canvas');
-
-
-//Creates terminal object for inputing text and displaying the text input
-var terminal = new Terminal(
-	{
-		x:0,   //sets x position where terminal display starts
-		y:500,   //sets y position where terminal display starts
-		width:canvas.canvas.width,    //sets how wide the terminal display is
-		height:canvas.canvas.height - 2,  //sets how far down the terminal display goes
-		background:'#517F51'              //sets background color: can give word, rgb string, or hex
-	},
-	{
-		color:'black',                   //sets font color
-		size: 20,                        //sets font size
-		style: 'monospace'               //sets font type (!!!kep it a monospace font type or cursor may not track so well)
-	},
-	canvas                               //reference to canvas object that the terminal appears on.
-);
-
-
-//Start Terminal & draw initial text
-terminal.init();
-terminal.drawText(terminal.keyBuffer); //should call this from terminal.init
-
-var display = new Display(
-	{
-		x:0,
-		y:0,
-		width:canvas.canvas.width,
-		height:canvas.canvas.height - 100,
-		background: 'black'
-	},
-	{
-		color:'white',
-		size: 26,
-		style: 'cursive'
-	},
-	canvas
-
-);
-
-display.init();
-display.showText("You walk into a large room surrounded on all sides by water. To the north is an exit. You see two trolls standing in your way. What do you do?");
-
-
-
-
-
-
 
 /*
-	In addition to different panes and text display, I may also want to draw the following
-	1. UI. Elements
-	2. 
+	NEW DATA STRUCTURE FOR displayBuffer on Terminal
+
+	var displayBuffer = [
+		
+		["line"],
+		["line"],
+		["partial", "partial", "partial"]
+
+	]
+
+	NEW DATA STRUCTURE FOR displayBuffer on Display
+
+	var displayBuffer = [
+		
+		["line"],
+		["line"],
+		["partial", "partial", "partial"]
+
+	]
+
+	
 	
 */
 
