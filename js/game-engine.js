@@ -19,6 +19,11 @@
 			- game-engine.js   holds main game logic and starts the whole thing rolling
 
 	Notes:
+	    - construct room description from bits of text.  for instance, when the character moves, it starts with text "You walk into "
+	       then it adds the rooms description "a small, round room with a high ceiling lost in shadows."  this is teh short description.  added to it
+	       are the short descriptions for exits, items, and actors.  look command brings up a longer description.  Examine command or search brings up hidden description
+	    - when more than one actor of the same type is in the room, game will count them and and translate the number into a number word and use right articles and plurals.
+	      example: you see two trolls standing by the door.   
 		- when a room is loaded as location, any items or mobs present are also read in and created as objects.
 		- maybe add ability for monsters to move between rooms, in which case they must be removed from the current room.
 		- game data will be stored as json files in the game-data.js file for now. 
@@ -34,17 +39,27 @@
 
 var gameEngine = ( function(global){
 
-	var game = "";      //holds data for current game
+	var game;      //holds data for current game
 	
 	var running = true;  //if true, then contiue to run the game
-	var location = {};  //game data for current location of player
+	//var here = {};  //game data for current location of player
+	
 	
 
 	init();  //Starts the game
 
 	//main game loop
-	function main(){
+	function main(tFrame){
+
 		//calculate animation delay factor by comparing timeStamps - only for if we want animations
+		//tFrame provides the time stamp for each frame
+
+		//request a new animation frame and rerun main() - this goes last in main
+		if(running){
+			console.log('?');
+			window.requestAnimationFrame(main);	
+		}
+		
 
 		//Get scene - add this at latter point
 		
@@ -54,11 +69,7 @@ var gameEngine = ( function(global){
 			commandInterpreter(cmdText);	
 		}
 		
-		//request a new animation frame and rerun main() - this goes last in main
-		if(running){
-			console.log("?");
-			window.requestAnimationFrame(main);	
-		}	
+			
 	}
 
 	
@@ -81,6 +92,10 @@ var gameEngine = ( function(global){
 		{
 			command: ['move', 'go', 'walk', 'head'],
 			handler: cmdMove
+		},
+		{
+			command: ['look'],
+			handler: cmdLook
 		}
 	];
 											
@@ -128,7 +143,7 @@ var gameEngine = ( function(global){
 			//If this cmdToken is not a command, then push it to the args list
 			if(!cmdMatched){
 					args.push(tValue);
-					console.log("pushing", tValue);
+					//console.log("pushing", tValue);
 				}
 	
 		} );
@@ -175,7 +190,39 @@ var gameEngine = ( function(global){
 		//MOVE - takes the name of a door and will move player to connecting room
 		function cmdMove(args)
 		{
-			console.log("I am moving!");
+			if(!args){
+				cmdError();
+
+			}
+			else{
+
+				//If I allow for multi word names, I will have to match multiple arges. Let's just do single names for now
+
+				//1. get exits list
+				var destination = "";
+				var exits = here.exits;			
+				//2. compare args with exits
+				args.forEach(function(argsItem, argsItemIndex){
+					exits.forEach(function(exit, exitIndex){ 
+						if(argsItem.toLowerCase() == exit.name.toLowerCase()){
+							destination = exit.link;														
+						}
+					} );
+
+				} );
+
+
+				
+				//3. a match is found, then change here to new location
+
+			}
+				
+
+		}
+
+		function cmdLook(args){
+			display.showText(' ');
+			display.showText(here.detail);
 		}
 
 		//ERROR - displays a simple error message
@@ -241,22 +288,24 @@ var gameEngine = ( function(global){
 		//start display
 		display.init();
 
-		//load in some game data
-		loadGame();
+		//load in some map data.  will take an argument allow game to choose map
+		loadMap();
 
 		//The following is for testing purpose only.  Get ride of this once we are able to laod in text from data files
-		display.showText("You walk into a large room surrounded on all sides by water. To the north is an exit. You see two trolls standing in your way. What do you do?");
+		display.showText(here.detail);
 
 		//Start the game by calling main()
 		main(); 
 	}
 
-	function loadGame(){
+	function loadMap(){
 		//for now, just load the first game
-		game = games[0];
+		game = new Map(games[0]);
 		console.log("loading...", game.title, "by", game.author);
 		console.log(game.detail);
 		console.log("first room is:", game.rooms[0].name);
+
+		here = game.rooms[0];
 		
 	}
 
@@ -268,5 +317,51 @@ var gameEngine = ( function(global){
 
 
 
+/*
+1. I could declare game objects in a new file. objects would be:
+  - Player
+  	 this.name
+  	 this.sex
+  	 this.age
+  	 this.detail
+     this.inventory = []
+     this.equiped = {right:{}, left:{}, head:{}} 
+     this.maxHealth = ;
+     this.maxStrength = ;
+     this.maxDexterity = ;
+     this.currHealth = ;
+     this.currStrength = ;
+     this.currDexterity = ;
+     this.alive = true;
+
+  - actor
+    inheriet from player or maybe other way around
+       this.location = ""
 
 
+  - item
+
+     
+commands:
+
+1. look [target]  = look at room (no arguments) or target (actor, item, inventory)
+2. examine (target) =  look more closely at something (item, container, self- for status)
+2. search [target]  = search room (no arguments) or target (can be a dead body or container)
+3. move (exit) = move through an exit
+4. take (item)
+5. equip (item)
+6. unequip (item)
+7. attack
+8. talk [target] = start a conversation if possible
+9. say [string]  = say a string of words
+10. emotes      = simply echo what player typed in.  could be used for special interactions
+
+- drop
+- put
+- give
+- disarm (door, container, trap)  if traps are added
+- unlock (door, container)
+- climb  (special exits)
+
+
+*/
