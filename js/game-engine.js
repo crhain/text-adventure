@@ -42,7 +42,7 @@ var gameEngine = ( function(global){
 	var game;      //holds data for current game
 	
 	var running = true;  //if true, then contiue to run the game
-	//var here = {};  //game data for current location of player
+	//var here = {};  //game data for current location of player. This engine level varialbe is a wraper for the game.here property?
 	
 	
 
@@ -190,6 +190,8 @@ var gameEngine = ( function(global){
 		//MOVE - takes the name of a door and will move player to connecting room
 		function cmdMove(args)
 		{
+			
+									
 			if(!args){
 				cmdError();
 
@@ -199,30 +201,52 @@ var gameEngine = ( function(global){
 				//If I allow for multi word names, I will have to match multiple arges. Let's just do single names for now
 
 				//1. get exits list
-				var destination = "";
-				var exits = here.exits;			
-				//2. compare args with exits
-				args.forEach(function(argsItem, argsItemIndex){
-					exits.forEach(function(exit, exitIndex){ 
-						if(argsItem.toLowerCase() == exit.name.toLowerCase()){
-							destination = exit.link;														
+				var destination = undefined;  //destination holds the roomID from exits list
+				var hits = [];  //an array that contains a list of possible exit matches
+				var exits = game.here.exits;  //wraps exits on current room for ease of typing
+
+
+				//2. we need a way to match individual args with multiword door names
+				//    we could return lists of possible hits (with id) and refine it
+				//    by iterating untill we are either through entire list or we get a single match
+
+				//3. compare args with exits
+				//Loop through arguments list
+				for(var argIndex = 0; argIndex < args.length; argIndex++)
+				{
+					var word = args[argIndex];
+					for(var exIndex = 0; exIndex < exits.length; exIndex++){
+						var exName = exits[exIndex].name;
+						if(word.toLowerCase() == exName.toLowerCase()){
+							destination = exits[exIndex].link;
+							break;
 						}
-					} );
+					}
 
-				} );
-
-
+					if(destination)	break;					
+				}
 				
-				//3. a match is found, then change here to new location
+
+				if(destination){
+					game.setHere(destination);
+					cmdLook();	
+				}
+				else{
+					cmdError(["Cannot go there!"])
+				}
+				//4. a match is found, then change here to new location
+				
 
 			}
+
+			
 				
 
 		}
 
 		function cmdLook(args){
 			display.showText(' ');
-			display.showText(here.detail);
+			display.showText(game.here.detail);
 		}
 
 		//ERROR - displays a simple error message
@@ -289,24 +313,22 @@ var gameEngine = ( function(global){
 		display.init();
 
 		//load in some map data.  will take an argument allow game to choose map
-		loadMap();
+		loadGame();
 
 		//The following is for testing purpose only.  Get ride of this once we are able to laod in text from data files
-		display.showText(here.detail);
+		display.showText(game.here.detail);
 
 		//Start the game by calling main()
 		main(); 
 	}
 
-	function loadMap(){
+	function loadGame(){
 		//for now, just load the first game
-		game = new Map(games[0]);
+		game = new Map(games[0]);  //can give a second argument giving starting room or set it by setting here property
 		console.log("loading...", game.title, "by", game.author);
 		console.log(game.detail);
 		console.log("first room is:", game.rooms[0].name);
-
-		here = game.rooms[0];
-		
+	
 	}
 
 

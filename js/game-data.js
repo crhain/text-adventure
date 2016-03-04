@@ -50,20 +50,26 @@ var HoH = {
 
 //##################################################################################################################################################################################
 // WRAPER OBJECT CONSTRUCTORS - utility objects for defining various game objects
+//   all objects here deal with the game model only.  Any object that would deal directly with game logic or interacting with the view would go in game-engine.js
+//   these provide wrapers for game data and utility methods to retrieve and set data on those objects
 //##################################################################################################################################################################################
 
 //Object constructor for a room wrapper.  Includes some utility functions
 function Map(data, start){
+
+	//sets starting location to start.  If no start argument given, then set to first room
 	if(start) this.here = start; else this.here = data.rooms[0];
 
+	//wrap game object elements
 	this.title = data.title;
 	this.author = data.author;
 	this.detail = data.detail;
-
 	this.rooms = data.rooms;
 	this.items = data.items;
 	this.actors = data.actors;
-	this.dialog = data.dialog;	
+	this.dialog = data.dialog;
+
+
 };
 
 //Set up Terminal object constructor to inheriet methods from Display
@@ -72,13 +78,33 @@ Map.prototype = Object.create(Object.prototype);
 
 //Returns a room object basedon name
 Map.prototype.getRoomByID = function(id){
-	this.rooms.forEach(function(room, rIndex){
+	var room = {detail:'error!!!'};
+	
+	//console.log("looking for id:", id);
+	//using a regular for loop instead of .forEach because you cannot return out of a .forEach without loosing scope of .forEach passed arguments.
+	for(var i = 0; i < this.rooms.length; i++){
+		room = this.rooms[i];
+		//console.log("looking at room id:", room.id);
 		if(room.id == id){
+			//console.log("found room id:", id, "matching room id:", room.id)
+			//console.log("this is the room:", room);
 			return room;
 		}
-	} );
+	}
+
+
+	return room;
 
 };
+
+//A wrapper function that sets Map object here property by retrieving room with getRoomByID method
+Map.prototype.setHere = function(roomID){
+	//console.log("setting here to id:", roomID);
+	var temp = this.getRoomByID(roomID);
+	//console.log("this is the room obj:", temp)
+	this.here = temp;
+	//console.log("here is now equal to:", this.here);
+}
 
 
 
