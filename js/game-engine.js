@@ -3,10 +3,10 @@
 ############################################################################################################################################################################################
 
 	To Do:
-		- add basic json object for sample game to game-data.js
-		- create room object
+
 		- create player object
-		- add code for reading in game file 
+		- basic move command
+		- basic look command
 
 
 	Revision: 
@@ -19,7 +19,8 @@
 			- game-engine.js   holds main game logic and starts the whole thing rolling
 
 	Notes:
-		- 
+		- when a room is loaded as location, any items or mobs present are also read in and created as objects.
+		- maybe add ability for monsters to move between rooms, in which case they must be removed from the current room.
 		- game data will be stored as json files in the game-data.js file for now. 
 		- new games can be added by 1) creating a new script file with the json literals and
 		  2) adding the variable name of the json to the games array and 3) adding line to
@@ -31,10 +32,12 @@
 */
 
 
-var game = ( function(global){
+var gameEngine = ( function(global){
 
+	var game = "";      //holds data for current game
+	
 	var running = true;  //if true, then contiue to run the game
-	var playerLoc = "";  //current location of player
+	var location = {};  //game data for current location of player
 	
 
 	init();  //Starts the game
@@ -47,7 +50,7 @@ var game = ( function(global){
 		
 		//get command and send to interpreter - is is the core of the game
 		if(terminal.commands.length > 0){
-			var cmdText = terminal.commands.pop();
+			var cmdText = terminal.commands.shift();
 			commandInterpreter(cmdText);	
 		}
 		
@@ -58,61 +61,7 @@ var game = ( function(global){
 		}	
 	}
 
-	//Initialize the canvas, display, and game
-	function init(){
-
-		//create a new canvas
-		// this is required to initialize the other objects as they must take it as a paramater
-		global.canvas = new Canvas(1200, 600, 'canvas');
-
-		//Creates terminal object for inputing text and displaying the text input
-		global.terminal = new Terminal(
-			{
-				x:0,   //sets x position where terminal display starts
-				y:500,   //sets y position where terminal display starts
-				width:canvas.canvas.width,    //sets how wide the terminal display is
-				height:canvas.canvas.height - 2,  //sets how far down the terminal display goes
-				background:'#517F51'              //sets background color: can give word, rgb string, or hex
-			},
-			{
-				color:'black',                   //sets font color
-				size: 20,                        //sets font size
-				style: 'monospace'               //sets font type (!!!kep it a monospace font type or cursor may not track so well)
-			},
-			canvas                               //reference to canvas object that the terminal appears on.
-		);
-
-		//create a new display
-		global.display = new Display(
-			{
-				x:0,
-				y:0,
-				width:canvas.canvas.width,
-				height:canvas.canvas.height - 100,
-				background: 'black'
-			},
-			{
-				color:'white',
-				size: 26,
-				style: 'cursive'
-			},
-			canvas
-
-		);
-
-		//Start Terminal & draw initial text
-		terminal.init();
-		terminal.drawText(terminal.keyBuffer); //should call this from terminal.init
-		//start display
-		display.init();
-		//The following is for testing purpose only.  Get ride of this once we are able to laod in text from data files
-		display.showText("You walk into a large room surrounded on all sides by water. To the north is an exit. You see two trolls standing in your way. What do you do?");
-
-		//Start the game by calling main()
-		main(); 
-	}
-
-
+	
 	//################################################################################
 	//COMMANDS LISTING - shows commands game understands
 	//  each one gets 
@@ -243,6 +192,75 @@ var game = ( function(global){
 	function sceneManager(){
 
 	}
+
+	//Initialize the canvas, display, and game
+	function init(){
+
+		//create a new canvas
+		// this is required to initialize the other objects as they must take it as a paramater
+		global.canvas = new Canvas(1200, 600, 'canvas');
+
+		//Creates terminal object for inputing text and displaying the text input
+		global.terminal = new Terminal(
+			{
+				x:0,   //sets x position where terminal display starts
+				y:500,   //sets y position where terminal display starts
+				width:canvas.canvas.width,    //sets how wide the terminal display is
+				height:canvas.canvas.height - 2,  //sets how far down the terminal display goes
+				background:'#517F51'              //sets background color: can give word, rgb string, or hex
+			},
+			{
+				color:'black',                   //sets font color
+				size: 20,                        //sets font size
+				style: 'monospace'               //sets font type (!!!kep it a monospace font type or cursor may not track so well)
+			},
+			canvas                               //reference to canvas object that the terminal appears on.
+		);
+
+		//create a new display
+		global.display = new Display(
+			{
+				x:0,
+				y:0,
+				width:canvas.canvas.width,
+				height:canvas.canvas.height - 100,
+				background: 'black'
+			},
+			{
+				color:'white',
+				size: 26,
+				style: 'cursive'
+			},
+			canvas
+
+		);
+
+		//Start Terminal & draw initial text
+		terminal.init();
+		terminal.drawText(terminal.keyBuffer); //should call this from terminal.init
+		//start display
+		display.init();
+
+		//load in some game data
+		loadGame();
+
+		//The following is for testing purpose only.  Get ride of this once we are able to laod in text from data files
+		display.showText("You walk into a large room surrounded on all sides by water. To the north is an exit. You see two trolls standing in your way. What do you do?");
+
+		//Start the game by calling main()
+		main(); 
+	}
+
+	function loadGame(){
+		//for now, just load the first game
+		game = games[0];
+		console.log("loading...", game.title, "by", game.author);
+		console.log(game.detail);
+		console.log("first room is:", game.rooms[0].name);
+		
+	}
+
+
 
 
 

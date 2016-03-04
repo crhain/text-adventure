@@ -510,7 +510,6 @@ Terminal.prototype.init = function(){
 		}		 
 	});	
 
-
 } 
 
 
@@ -530,9 +529,6 @@ Terminal.prototype.drawText = function(text){
 	// to it's variables, so we need to make variables we need public properties on the ojbect :(
 	//Object.getPrototypeOf(new Display(this.display, this.font, this.canvas)).drawText.call(this, text);
 		
-
-	
-
 	//Referesh the background color
 	this.refreshBackground();
 	//set font	

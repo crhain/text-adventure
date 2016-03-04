@@ -28,19 +28,44 @@
 
 
 //DEFINE ALL GAME DATA FILES HERE
-
+/*
 var HoH = {
-	rooms: [],
-	items: [],
-	mobiles: []
-	dialog: []
+	"rooms": [
+				"id":"",
+				"name": "",
+				"detail": "",
+				"items": ["id1", "id2"],
+				"actors": ["id1", "id2"],
+				"exits":[
+					"id":"",
+					"name":"",
+					"link":""
+				]
+			],
+	"items": [],
+	"actors": [],
+	"dialog": []
 };
+*/
 
+var Test = {
+				"title": "TEST!",
+				"author": "Lord Niah",
+				"detail": "A very testy kind of test game!",
+				"rooms":
+				[
+					{"id":"room1", "name":"room1", "detail": "You are in a large, ornate hallway.", "exits":[{"id":"door1", "name":"north", "link":"room2"}], "actors":[{"name": "Ralph"}]},
+					{"id":"room2", "name":"room2", "detail": "You are in a long, narrow hallway.", "exits":[{"id":"door2", "name":"south", "link":"room1"}], "actors":[{"name": "Bob"}]}
+				],
+				"items":[],
+				"actors":[],
+				"dialog":[]
+			}
 
 
 //################################################################################################################################################################################
 
-var games = [HoH];  //This holds the variable names referencing each game json file.
+var games = [Test];  //This holds the variable names referencing each game json file.
 
 
 //################################################################################################################################################################################
