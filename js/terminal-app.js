@@ -3,21 +3,17 @@
 ############################################################################################################################################################################################
 ############################################################################################################################################################################################
 
-	To Do:
-	 1. ctx.measureText(string)  ==> this will return the width in pixels of a string. 
-		- works... but as the line gets longer, it start to bog down... because it is highly inefficent.  Need new algorithim
-	 
-	 2. drawText method will display all lines in keyBuffer array, while making sure they fit the line. 
-	    **** word wrap works except: if I type a word to edge of line and cursor goes to next line and then I hit a space, it will wrap the word instead of adding space to next line?!?!
-	 3. My have to create seperate drawText methods for display and terminal because terminal gets it's data from keybuffer and display does not
 	
-	Terminal interface
-	- add submitCommand method that takes the following paramaters (commandText, targetObj)  
+	Revision: 
+			I will probably need to remove line breaking for non-carriage returned lines from terminal or at least limit continuous lines involved
+			I will have to format keybuffer and push to display buffer for display similar to the way I am doing it for display
+	
+	
+	Terminal interface (bonus items)
 	- text scrolling with up/down and/or pageup/pagedown
 	- also need to disable space, backspace, etc. from affecting browser window
 	
-	Display interface
-
+	Display interface (bonus items)
 	- add ability to format text.. for instance, different color text, font types, and sizes
 	    o add tags for font-weight, color, line break, and possibly alignment; these are similar to html tags
 	    o parced and formated text will go into an array as follows:

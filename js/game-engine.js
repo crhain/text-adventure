@@ -3,17 +3,19 @@
 ############################################################################################################################################################################################
 
 	To Do:
+		- add basic json object for sample game to game-data.js
+		- create room object
+		- create player object
+		- add code for reading in game file 
+
 
 	Revision: 
-			I need to call main inside of animation loop 
-			I need to call a drawDisplay and drawTerminal method (which need to be created) that draws the display and terminal every animation frame
-			I will probably need to remove line breaking for non-carriage returned lines from terminal or at least limit continuous lines involved
-			I will have to format keybuffer and push to display buffer for display similar to the way I am doing it for display
+			
 
     Overview:
 			- game-data.js (holds games global array and HoH game data)
 			- various game data files for each game
-			- game-display.js  holds constructors for various game display elements
+			- terminal-app.js  holds constructors for various game display elements
 			- game-engine.js   holds main game logic and starts the whole thing rolling
 
 	Notes:
@@ -28,54 +30,36 @@
 ###############################################################################################################################################################################################	  
 */
 
-var running = true;
-
 
 var game = ( function(global){
 
-	var mainID;
+	var running = true;  //if true, then contiue to run the game
 	var playerLoc = "";  //current location of player
 	
 
 	init();  //Starts the game
 
-	
-
 	//main game loop
 	function main(){
-		//calculate animation delay factor by comparing timeStamps
+		//calculate animation delay factor by comparing timeStamps - only for if we want animations
 
 		//Get scene - add this at latter point
-
-		//draw game output
-		//get command and send to interpreter
+		
+		//get command and send to interpreter - is is the core of the game
 		if(terminal.commands.length > 0){
 			var cmdText = terminal.commands.pop();
 			commandInterpreter(cmdText);	
 		}
 		
-		
-		//request a new animation frame and rerun main()
+		//request a new animation frame and rerun main() - this goes last in main
 		if(running){
-			//console.log("?");
-			mainID = window.requestAnimationFrame(main);	
-		}
-	
-
-		
-		/*
-			1. draw display text
-			2. get current command and send to interpreter
-			3. animation loop calling main (or just inside while loop for now)
-		*/
+			console.log("?");
+			window.requestAnimationFrame(main);	
+		}	
 	}
 
 	//Initialize the canvas, display, and game
 	function init(){
-
-		/*
-			
-		*/
 
 		//create a new canvas
 		// this is required to initialize the other objects as they must take it as a paramater
@@ -98,7 +82,7 @@ var game = ( function(global){
 			canvas                               //reference to canvas object that the terminal appears on.
 		);
 
-
+		//create a new display
 		global.display = new Display(
 			{
 				x:0,
@@ -119,102 +103,138 @@ var game = ( function(global){
 		//Start Terminal & draw initial text
 		terminal.init();
 		terminal.drawText(terminal.keyBuffer); //should call this from terminal.init
-
+		//start display
 		display.init();
+		//The following is for testing purpose only.  Get ride of this once we are able to laod in text from data files
 		display.showText("You walk into a large room surrounded on all sides by water. To the north is an exit. You see two trolls standing in your way. What do you do?");
 
-
-		main(); //Starts main loop
+		//Start the game by calling main()
+		main(); 
 	}
 
 
-		//################################################################################
-		//COMMANDS LISTING - shows commands game understands
-		//--------------------------------------------------------------------------------		
-		var commands = [
-			{
-				command: ['quit'],
-				callback: cmdQuit
-			},
-			{
-				command: ['say'],
-				callback: cmdSay
-			},
-			{
-				command: ['move', 'go', 'walk', 'head'],
-				callback: cmdMove
-			}
-		];
+	//################################################################################
+	//COMMANDS LISTING - shows commands game understands
+	//  each one gets 
+	//		command: a list of synonoms that are understood by the game (all lower case please!)
+	//		callbakc: name of function to 
+	//  
+	//--------------------------------------------------------------------------------		
+	var commands = [
+		{
+			command: ['quit'],
+			handler: cmdQuit
+		},
+		{
+			command: ['say'],
+			handler: cmdSay
+		},
+		{
+			command: ['move', 'go', 'walk', 'head'],
+			handler: cmdMove
+		}
+	];
 											
 	
 	//core game logic here. Gets command text, parces it, and then runs various commands
 	function commandInterpreter(cmdText){
 
-		var cmdExe = [];  //passes an object {cmd: , arguments:[]}
-		var cmdTokens;    
-		//console.log(commandText);
+		var cmdExe = undefined;  //holds the command handler to be executed
+		var cmdTokens = [];      //list of command tokens created from cmdText
+		var args = [];            //this contains non-command tokens that are passed to the command function as arguments
+		var cmdMatched = false;   //this is a hack so that I know that a cmdToken is not a command and can be pushed ot arguments list
 
-		//1. use an re extract all strings or words into cmdTokens list.
+		
+		var reTokens = /".+"|[^ .]+/gi;  //regular expression that finds words or "strings" in the command string (could add ' ' as well)
+		
 
+		//1. use an re to extract all strings or words into cmdTokens list.
+		cmdTokens = cmdText.match(reTokens);
 
 		//2. go through cmdTokens list and see if they are in the commands list
-		commands.forEach(function(){
-			//3. if a cmdToken is in the commands list, then add its callback to cmdExe
-			//and add all words that follow to the cmdArgs list
+		cmdTokens.forEach(function(tValue, tIndex){
+			
+			cmdMatched = false;
+
+			commands.forEach(function(cValue, cIndex){
+				//3. if a cmdToken is in the commands list, then add its handler to cmdExe
+				if(cValue.command.length == 1){
+					if(tValue.toLowerCase() == cValue.command[0]){
+						cmdExe = cValue.handler;
+						cmdMatched = true;
+					}
+				}		
+				else{
+					//3. if a cmdToken is in the commands list, then add its handler to cmdExe
+					for(var i = 0; i<cValue.command.length; i++){
+						if(tValue.toLowerCase() == cValue.command[i]){
+							//console.log(cValue.command[i]);
+							cmdExe = cValue.handler;
+							cmdMatched = true;
+						}
+					}		
+				}				
+			} );
+			
+			//If this cmdToken is not a command, then push it to the args list
+			if(!cmdMatched){
+					args.push(tValue);
+					console.log("pushing", tValue);
+				}
 	
 		} );
 
-		//4. if cmdExe then run through it and execute all commands with arguments; if not, return error
-
-
-		//#############################################################################################
-		//TEST CODE
-		//---------------------------------------------------------------------------------------------
-
-		if(cmdText.toLowerCase() == 'quit'){
-			cmdQuit();	
-		}
-	
-			
-
-			//cannot set global variable running from inside this function?????
-			//return a false value and set running in main function
-			//return false;  
+		//if no command was found, then call cmdError
+		if(cmdExe) cmdExe(args); else cmdError(args);
+				
+		//!!!I was going to allow stringing of commands by pushing command token to an array, but that would be just too complex right now		
 	}
 
 
 	//################################################################################
-	//COMMAND CALLBACKS
+	//COMMAND handlers
 	//--------------------------------------------------------------------------------
 
-		//Exit Game
+		//QUIT - exit the game
 		function cmdQuit(args)
 		{
 			running = false;
+			display.showText(' ');
 			display.showText('Quiting...');
 		}
 
-
+		//SAY - say whatever words came after the command
 		function cmdSay(args){
 			//if there is only one arg, then say that
 			if(args){
 				if(args.length == 1){
-					display.showText('You say: "' + args + '"');
+					display.showText(' ');
+					display.showText('You say: ' + args);
 				}
-				else{
-					display.showText('You say: "' + args.join(" ") + '"');
+				else if(args.length > 1){
+					display.showText(' ');
+					display.showText('You say: ' + args.join(" ") );
 				}
 			}
 			else{
+				display.showText(' ');
 				display.showText('You say nothing!');
 			}
 			
 		}
 
+		//MOVE - takes the name of a door and will move player to connecting room
 		function cmdMove(args)
 		{
-
+			console.log("I am moving!");
 		}
+
+		//ERROR - displays a simple error message
+		function cmdError(args){
+			display.showText(' ');
+			display.showText('Hmmm?');
+		}
+
 
 
 	//handels moving between scenes (only one scene right now)
@@ -226,7 +246,7 @@ var game = ( function(global){
 
 
 
-} )(this);
+} )(this);  //sending this to wraper function so the global namespace gets assigned to the variable name global.
 
 
 
