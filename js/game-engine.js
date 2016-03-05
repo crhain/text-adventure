@@ -5,8 +5,10 @@
 	To Do:
 
 		- create player object
-		- basic move command
-		- basic look command
+		- udpate move command to use new functions
+		- update look command and add examine command
+		
+		
 
 
 	Revision: 
@@ -72,6 +74,8 @@ var gameEngine = ( function(global){
 			
 	}
 
+
+
 	
 	//################################################################################
 	//COMMANDS LISTING - shows commands game understands
@@ -86,6 +90,10 @@ var gameEngine = ( function(global){
 			handler: cmdQuit
 		},
 		{
+			command: ['clear'],
+			handler: cmdClear
+		},
+		{
 			command: ['say'],
 			handler: cmdSay
 		},
@@ -96,6 +104,10 @@ var gameEngine = ( function(global){
 		{
 			command: ['look'],
 			handler: cmdLook
+		},
+		{
+			command: ['get', 'take'],
+			handler: cmdGet
 		}
 	];
 											
@@ -114,7 +126,7 @@ var gameEngine = ( function(global){
 
 		//1. use an re to extract all strings or words into cmdTokens list.
 		cmdTokens = cmdText.match(reTokens);
-
+		
 		//2. go through cmdTokens list and see if they are in the commands list
 		cmdTokens.forEach(function(tValue, tIndex){
 			
@@ -142,6 +154,7 @@ var gameEngine = ( function(global){
 			
 			//If this cmdToken is not a command, then push it to the args list
 			if(!cmdMatched){
+					tValue = removeQuotes(tValue);
 					args.push(tValue);
 					//console.log("pushing", tValue);
 				}
@@ -151,7 +164,13 @@ var gameEngine = ( function(global){
 		//if no command was found, then call cmdError
 		if(cmdExe) cmdExe(args); else cmdError(args);
 				
-		//!!!I was going to allow stringing of commands by pushing command token to an array, but that would be just too complex right now		
+		//!!!I was going to allow stringing of commands by pushing command token to an array, but that would be just too complex right now	
+		function removeQuotes(string){
+			string = string.replace(/"/g, '');
+			return string;
+		}
+
+
 	}
 
 
@@ -163,8 +182,13 @@ var gameEngine = ( function(global){
 		function cmdQuit(args)
 		{
 			running = false;
-			display.showText(' ');
+			//display.showText(' ');
 			display.showText('Quiting...');
+		}
+
+		//wraper for display clear method.  clears the screen of text.
+		function cmdClear(args){
+			display.clear();	
 		}
 
 		//SAY - say whatever words came after the command
@@ -172,16 +196,16 @@ var gameEngine = ( function(global){
 			//if there is only one arg, then say that
 			if(args){
 				if(args.length == 1){
-					display.showText(' ');
+					//display.showText(' ');
 					display.showText('You say: ' + args);
 				}
 				else if(args.length > 1){
-					display.showText(' ');
+					//display.showText(' ');
 					display.showText('You say: ' + args.join(" ") );
 				}
 			}
 			else{
-				display.showText(' ');
+				//display.showText(' ');
 				display.showText('You say nothing!');
 			}
 			
@@ -229,33 +253,61 @@ var gameEngine = ( function(global){
 
 				if(destination){
 					game.setHere(destination);
-					cmdLook();	
+					showCurrentRoom("You enter ");	
 				}
 				else{
-					cmdError(["Cannot go there!"])
+					cmdError(["You want to get where?"])
 				}
 				//4. a match is found, then change here to new location
 				
 
-			}
-
-			
-				
+			}			
 
 		}
 
 		function cmdLook(args){
-			display.showText(' ');
-			display.showText(game.here.detail);
+			showCurrentRoom("You are in ");
+		}
+
+		function cmdGet(args){
+			//need to write helper function
+			//display.showText('Gettin it!');
+
+			var item = removeMatchedItem(args, game.here.items, 'name');
+			if(item){
+				display.showText("You recieve " + item.name);
+				//!!!add item to player inventory once it exists
+			}
+			else{
+				cmdError(["You want to get what?"]);
+			}
+				
 		}
 
 		//ERROR - displays a simple error message
 		function cmdError(args){
-			display.showText(' ');
-			display.showText('Hmmm?');
+			//display.showText(' ');
+			if(args) display.showText(args); else display.showText('Hmmm?');
 		}
 
+	//wraper function for showing room description	- 
+	//arguments: intro - optinoal intro text (remember to add space after)
+	function showCurrentRoom(intro){
+		var text = "";
+		if(intro) 	text = intro;
+		//show room description
+		display.showText(text + game.here.detail);
+		//show item descriptions
+		if(game.here.items){
+			game.here.items.forEach(function(item){
+				display.showText("You see " + item.detail);
+			} );	
+		}
+		
+		//show actors
 
+		//add section to show monsters in the room
+	}
 
 	//handels moving between scenes (only one scene right now)
 	//  instead of a function, we could create objects representing scenes and store them
@@ -316,7 +368,7 @@ var gameEngine = ( function(global){
 		loadGame();
 
 		//The following is for testing purpose only.  Get ride of this once we are able to laod in text from data files
-		display.showText(game.here.detail);
+		cmdLook(game.here.detail);
 
 		//Start the game by calling main()
 		main(); 
@@ -332,11 +384,61 @@ var gameEngine = ( function(global){
 	}
 
 
+	
 
 
 
 } )(this);  //sending this to wraper function so the global namespace gets assigned to the variable name global.
 
+
+/*
+ create utility function called smartmatch(search, target) that matches a list of words against another list with multiword strings.
+		  it must cumulatively do sub-matches against the target strings untill it has matched one of the target strings completely.
+		  It could also do partial matches based on some algorithim and return the best match.  For instance, it would understand abbreviations or mispellings like n or nroth for north
+
+*/
+
+//#####################################################################################################
+	//getMatchedItem:
+	//-----------------------------------------------------------------------------------------------------
+	//  Inputs:
+	//		words - a list/array of strings to be searched against
+	//      target - a second list to search against words for a match
+	//      property(optional) - if list contains objects, then the property to access
+	//  Return: the list item that was matched or false if no match
+	//#####################################################################################################      
+	function getMatchedItem(words, target, property){
+
+		var sentence = words.join(" ").toLowerCase();
+		console.log("word list is:", sentence);
+
+		//Now iterate over the target list
+		for(var i = 0; i < target.length; i++){
+			console.log("my item name is:", target[i][property]);
+			if(sentence.search(target[i][property].toLowerCase()) != -1){
+				return target[i]; //return the item in the list that matched
+			}
+		}
+
+		return false;
+	}
+
+	function removeMatchedItem(words, target, property){
+		var sentence = words.join(" ").toLowerCase();
+		var item = undefined;
+
+		//Now iterate over the target list
+		for(var i = 0; i < target.length; i++){
+
+			if(sentence.search(target[i][property].toLowerCase()) != -1){
+				item = target[i]; //return the item in the list that matched
+				target.splice(i, 1);  //removes item from target
+			}
+		}
+
+		return item;
+		
+	}
 
 
 /*
@@ -386,4 +488,19 @@ commands:
 - climb  (special exits)
 
 
+neat idea:  add tags into detail description that weaves details of an item or monster into the scene.  Could also block out sections that
+will appear or disappear depending on various flags.  This would require that the text be parced first before being displayed.
+
+
+Additional Features:
+* markup language for mixing monster and item descriptions into the main room text or showing/hidding parts of description depending on game state
+* reactive room descriptions, special events that can occur (first entering, running commands, game state changes)
+* 
+* actors can follow the player
+
+
+
 */
+
+
+

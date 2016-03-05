@@ -98,19 +98,70 @@ function Display(displayArea, font, canvas){
 Display.prototype = Object.create(Object.prototype); 
 //Terminal.prototype.constructor = Terminal;  //gives it correct constructor method
 
+//################################################################################################
+//PUBLIC DISPLAY METHODS
+//################################################################################################
+
 //-----------------------------------------------------------------------------------------------
 //DISPLAY: init method
 //-----------------------------------------------------------------------------------------------
 //sets up some key variables on the display: these cannot be declared in the contructor
 //Inputs: 
 //			None
-//
 //	Outputs:
 //			None
 //------------------------------------------------------------------------------------------------
 Display.prototype.init = function(){
 	this.refreshBackground();		
 }
+
+//-----------------------------------------------------------------------------------------------
+//DISPLAY: clear method
+//-----------------------------------------------------------------------------------------------
+//clears displayBuffer and display
+//Inputs: 
+//			None
+//
+//	Outputs:
+//			- clears diplay and displayBuffer
+//------------------------------------------------------------------------------------------------
+Display.prototype.clear = function(){
+	this.displayBuffer = []; //empty displayBuffer
+	this.refreshBackground(); //refresh background
+}
+
+//-----------------------------------------------------------------------------------------------
+//DISPLAY: showText method
+//-----------------------------------------------------------------------------------------------
+//wraper for drawText, formatText, setFont and addTextToDisplay buffer (non of whcih should be
+//      called sperately)
+//Inputs: 
+//			text = an array of text lines to be displayed
+//          nopad = true/false to not add line break before text; defaults to false if not set
+//
+//	Outputs:
+//			- outputs formated text to the display and adds it to display buffer
+//	
+//------------------------------------------------------------------------------------------------
+Display.prototype.showText = function(text, nopad){
+	
+	if(this.displayBuffer.length > 0){ //if there is something in the display buffer 
+		//console.log(displayBuffer);
+		if(!nopad) this.addTextToDisplayBuffer([""]); //if nopad set to false then add pad
+	}  
+		
+
+	//set font so that format text works
+	this.setFont();
+	
+	var formattedText = this.formatText(text);
+	this.addTextToDisplayBuffer(formattedText);
+
+	this.drawText(this.displayBuffer);
+}
+//################################################################################################################
+//PRIVATE DISPLAY METHODS
+//################################################################################################################
 
 //draw/refresh the background
 Display.prototype.refreshBackground = function(){
@@ -132,22 +183,6 @@ Display.prototype.setFont = function(font){
 	this.canvas.ctx.fillStyle = fontColor;	
 
 }
-
-//Takes a single line of text, format it, push it to displayBuffer, and then draw the displayBuffer
-Display.prototype.showText = function(text){
-	
-	//set font so that format text works
-	this.setFont();
-	
-	var formattedText = this.formatText(text);
-	
-	this.addTextToDisplayBuffer(formattedText);
-
-	this.drawText(this.displayBuffer);
-
-
-}
-
 
 
 //Pushes text array to display buffer

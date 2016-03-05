@@ -121,20 +121,21 @@ var Test = ( function(){
 	var bob = {id:"bob", name:"Bob"};
 
 	//ITEMS
-	var goldKey = {id:"gkey", name:"Gold key"};
+	var goldKey = {id:"gkey", name:"gold key", detail:"a large, gleaming [gold key] laying on top of an old barrel."};   //hidden property that only reveals on examine or search
+	var rustySword = {id:"rsword", name:"Rusty Sword", detail:"a [rusty sword] laying on the floor next to the barrel."};   //hidden property that only reveals on examine or search
 
 	//ROOMS
 	var room1 = {id:"room1", name:"Troll Room"};
-	room1.detail = "a large room surrounded on all sides by water. To the north is an exit. You see two trolls standing in your way. What do you do?";
+	room1.detail = "a large room surrounded on all sides by water. To the [north] is an exit.";
 	room1.exits = [{name:"north", link:"room2", detail:""}];
-	room1.items = [goldKey] ;
+	room1.items = [goldKey, rustySword];
 	room1.actors = [ralph];
 
 
 	var room2 = {id:"room2", name:"Dark Cave", exits:[{"name":"south", "link":"room1", "detail":""}] };
 	room2.items = [];
 	room2.actors = [bob];
-	room2.detail = "You enter a small, dark cave.  A chill wind blows in from above...";
+	room2.detail = "a small, dark cave.  A chill wind blows in from above... The only way out is the [south exit]";
 
 	var game = {
 					"title": "TEST!",
