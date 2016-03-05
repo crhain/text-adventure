@@ -5,6 +5,9 @@
 	To Do:
 		
 		- udpate move command to use new functions
+		- update look command to show details of items and monsters
+		- add command to show player details (this can be moved to menu item eventually?)
+
 		
 		
 		
@@ -76,10 +79,8 @@ var gameEngine = ( function(global){
 			var cmdText = terminal.commands.shift();
 			commandInterpreter(cmdText);	
 		}
-		
-			
+				
 	}
-
 
 
 	
@@ -114,6 +115,14 @@ var gameEngine = ( function(global){
 		{
 			command: ['get', 'take'],
 			handler: cmdGet
+		},
+		{
+			command: ['inventory', 'inv', 'pack', 'backpack', 'show inventory'],
+			handler: cmdInventory
+		},
+		{
+			command: ['player', 'show player'],
+			handler: cmdPlayer
 		}
 	];
 											
@@ -262,38 +271,30 @@ var gameEngine = ( function(global){
 				else{
 					cmdError(["You want to get where?"])
 				}
-				//4. a match is found, then change here to new location
-				
+				//4. a match is found, then change here to new location		
 
 			}			
 
 		}
-
+		//shows details of items, actors, or the room if no arguments passed
 		function cmdLook(args){
 			
 			if(args.length > 0){ //if there are arguments, we need to find out what they are								
 				var sentence = args.join(" ");
 				//show players inventory
 				if(sentence.search("inventory") != -1){  //show inventory (might split this out)
-					
-					if(player.inventory.length < 1){
-						display.showText("You have nothing in your inventory!");
-					}
-					else{
-						display.showText("You have the following items in your inventory:");	
-							player.inventory.forEach(function(item, index){
-							display.showText((index + 1) + ". " + item.name, true);
-						});
-					}					
+					cmdInventory();									
 				}
 				//now check to see if words match items or monsters in area
+				else{
+
+				}
 			}
 			else{
 				showCurrentRoom("You are in ");  //just show the room if there are no arguments
-			}
-				
+			}		
 		}
-
+		//get's item and adds to player inventory
 		function cmdGet(args){
 			//need to write helper function
 			//display.showText('Gettin it!');
@@ -307,6 +308,24 @@ var gameEngine = ( function(global){
 				cmdError(["You want to get what?"]);
 			}
 				
+		}
+
+		//show player inventory - takes no arguments so rest of sentence will be ignored
+		function cmdInventory(){
+			if(player.inventory.length < 1){
+				display.showText("You have nothing in your inventory!");
+			}
+			else{
+				display.showText("You have the following items in your inventory:");	
+					player.inventory.forEach(function(item, index){
+					display.showText((index + 1) + ". " + item.name, true);
+				});
+			}	
+		}
+
+		function cmdPlayer(){
+			display.showText(player.name);	
+			//add in rest of stats once I have them
 		}
 
 		//ERROR - displays a simple error message
