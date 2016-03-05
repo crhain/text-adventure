@@ -54,6 +54,55 @@ var HoH = {
 //   these provide wrapers for game data and utility methods to retrieve and set data on those objects
 //##################################################################################################################################################################################
 
+function Player(data){
+	//data is an object with the player data (either passed or object literal)
+
+	this.name = 		data.name;
+	//this.sex = 			data.sex;
+	//this.age = 			data.age;
+	//this.detail = 		data.detail;
+	//this.maxStr =		data.maxStr;
+	//this.maxDex = 		data.maxDex;
+	//this.maxHealth	=	data.maxHealth;
+
+	this.inventory = [];  //list of item objects
+	//The following are set to objects representing the items the player has equped
+	this.equip;
+
+	//this.equip.head;  
+	//this.equip.neck;
+	//this.equip.rightFinger;
+	//this.equip.leftFinger;
+	//this.equip.chest; 		
+	//this.equip.feet;
+	//this.equip.rightHand;
+	//this.equip.leftHand;
+}
+
+Player.prototype = Object.create(Object.prototype);
+
+
+
+//Takes an object representing an item and adds to players inventory
+Player.prototype.addItemToInventory = function(item){
+	//may have to add some code to check for duplicates or
+	//allow for stacking of items
+	this.inventory.push(item);
+}; 
+
+//Takes an object representing an item and removes from players inventory
+Player.prototype.removeItemFromInventory = function(item){
+	//may add some code to allow subtracting from stacks
+
+	//loop through inventory looking for item
+	for(var i = 0; i < this.inventory.length; i++){
+		if(this.inventory[i].id == item.id)
+			this.inventory.splice(i, 1); //delete the item from inventory if matched
+	}
+	
+};
+
+
 //Object constructor for a room wrapper.  Includes some utility functions
 function Map(data, start){
 

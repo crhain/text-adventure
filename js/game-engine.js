@@ -3,10 +3,9 @@
 ############################################################################################################################################################################################
 
 	To Do:
-
-		- create player object
+		
 		- udpate move command to use new functions
-		- update look command and add examine command
+		
 		
 		
 
@@ -42,10 +41,17 @@
 var gameEngine = ( function(global){
 
 	var game;      //holds data for current game
-	
+
 	var running = true;  //if true, then contiue to run the game
 	//var here = {};  //game data for current location of player. This engine level varialbe is a wraper for the game.here property?
 	
+
+	var player = new Player({
+		name: "Carl The Destroyer"
+	});   //holds data on current character the player is using.  will just set this here right now for testing.
+
+
+
 	
 
 	init();  //Starts the game
@@ -94,7 +100,7 @@ var gameEngine = ( function(global){
 			handler: cmdClear
 		},
 		{
-			command: ['say'],
+			command: ['say', 'yell'],
 			handler: cmdSay
 		},
 		{
@@ -102,7 +108,7 @@ var gameEngine = ( function(global){
 			handler: cmdMove
 		},
 		{
-			command: ['look'],
+			command: ['look', 'check', 'examine', 'inspect'],
 			handler: cmdLook
 		},
 		{
@@ -162,7 +168,7 @@ var gameEngine = ( function(global){
 		} );
 
 		//if no command was found, then call cmdError
-		if(cmdExe) cmdExe(args); else cmdError(args);
+		if(cmdExe) cmdExe(args); else cmdError();
 				
 		//!!!I was going to allow stringing of commands by pushing command token to an array, but that would be just too complex right now	
 		function removeQuotes(string){
@@ -214,11 +220,9 @@ var gameEngine = ( function(global){
 		//MOVE - takes the name of a door and will move player to connecting room
 		function cmdMove(args)
 		{
-			
-									
+												
 			if(!args){
 				cmdError();
-
 			}
 			else{
 
@@ -266,7 +270,28 @@ var gameEngine = ( function(global){
 		}
 
 		function cmdLook(args){
-			showCurrentRoom("You are in ");
+			
+			if(args.length > 0){ //if there are arguments, we need to find out what they are								
+				var sentence = args.join(" ");
+				//show players inventory
+				if(sentence.search("inventory") != -1){  //show inventory (might split this out)
+					
+					if(player.inventory.length < 1){
+						display.showText("You have nothing in your inventory!");
+					}
+					else{
+						display.showText("You have the following items in your inventory:");	
+							player.inventory.forEach(function(item, index){
+							display.showText((index + 1) + ". " + item.name, true);
+						});
+					}					
+				}
+				//now check to see if words match items or monsters in area
+			}
+			else{
+				showCurrentRoom("You are in ");  //just show the room if there are no arguments
+			}
+				
 		}
 
 		function cmdGet(args){
@@ -276,7 +301,7 @@ var gameEngine = ( function(global){
 			var item = removeMatchedItem(args, game.here.items, 'name');
 			if(item){
 				display.showText("You recieve " + item.name);
-				//!!!add item to player inventory once it exists
+				player.addItemToInventory(item);
 			}
 			else{
 				cmdError(["You want to get what?"]);
@@ -368,7 +393,7 @@ var gameEngine = ( function(global){
 		loadGame();
 
 		//The following is for testing purpose only.  Get ride of this once we are able to laod in text from data files
-		cmdLook(game.here.detail);
+		showCurrentRoom("You find yourself in ");
 
 		//Start the game by calling main()
 		main(); 
@@ -384,10 +409,6 @@ var gameEngine = ( function(global){
 	}
 
 
-	
-
-
-
 } )(this);  //sending this to wraper function so the global namespace gets assigned to the variable name global.
 
 
@@ -398,47 +419,7 @@ var gameEngine = ( function(global){
 
 */
 
-//#####################################################################################################
-	//getMatchedItem:
-	//-----------------------------------------------------------------------------------------------------
-	//  Inputs:
-	//		words - a list/array of strings to be searched against
-	//      target - a second list to search against words for a match
-	//      property(optional) - if list contains objects, then the property to access
-	//  Return: the list item that was matched or false if no match
-	//#####################################################################################################      
-	function getMatchedItem(words, target, property){
 
-		var sentence = words.join(" ").toLowerCase();
-		console.log("word list is:", sentence);
-
-		//Now iterate over the target list
-		for(var i = 0; i < target.length; i++){
-			console.log("my item name is:", target[i][property]);
-			if(sentence.search(target[i][property].toLowerCase()) != -1){
-				return target[i]; //return the item in the list that matched
-			}
-		}
-
-		return false;
-	}
-
-	function removeMatchedItem(words, target, property){
-		var sentence = words.join(" ").toLowerCase();
-		var item = undefined;
-
-		//Now iterate over the target list
-		for(var i = 0; i < target.length; i++){
-
-			if(sentence.search(target[i][property].toLowerCase()) != -1){
-				item = target[i]; //return the item in the list that matched
-				target.splice(i, 1);  //removes item from target
-			}
-		}
-
-		return item;
-		
-	}
 
 
 /*
@@ -469,12 +450,17 @@ var gameEngine = ( function(global){
 commands:
 
 1. look [target]  = look at room (no arguments) or target (actor, item, inventory)
-2. examine (target) =  look more closely at something (item, container, self- for status)
 2. search [target]  = search room (no arguments) or target (can be a dead body or container)
-3. move (exit) = move through an exit
-4. take (item)
-5. equip (item)
-6. unequip (item)
+*3. move (exit) = move through an exit
+*4. take (item)
+5. drop (item) = adds it to room
+6. equip (item) = in addition to adding it to playcer, it's properties can improve player stats
+7. unequip (item) = in addition to unequping it from player, it's properties will be removed from player stats
+8. use (item)
+9. drink (liquid item)
+10. eat (food item)
+
+
 7. attack
 8. talk [target] = start a conversation if possible
 9. say [string]  = say a string of words
