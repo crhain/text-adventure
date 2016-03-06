@@ -218,8 +218,8 @@ var Test = ( function(){
 
 	//ROOMS
 	var room1 = {id:"room1", name:"Troll Room"};
-	room1.detail = "a large room surrounded on all sides by water. To the [north] is an exit.";
-	room1.exits = [{name:"north", link:"room2", detail:""}];
+	room1.detail = "a large room surrounded on all sides by water. To the [north] is an exit.  A [rope] dangles down from above";
+	room1.exits = [{name:"north", link:"room2", detail:""}, {name:"rope", link:"room3", detail:""}];
 	room1.items = [goldKey, rustySword];
 	room1.actors = [ralph];
 
@@ -229,11 +229,16 @@ var Test = ( function(){
 	room2.actors = [bob];
 	room2.detail = "a small, dark cave.  A chill wind blows in from above... The only way out is the [south exit]";
 
+	var room3 = {id:"room3", name:"Secret Chamber", exits:[{"name":"hatch", "link":"room1", "detail":""}] };
+	room3.items = [];
+	room3.actors = [];
+	room3.detail = " a small, confined room lighted by a single candel sitting on an unsteady looking table.  The only other thing here is the [hatch] you climbed up through.";
+
 	var game = {
 					"title": "TEST!",
 					"author": "Lord Niah",
 					"detail": "A very testy kind of test game!",
-					"rooms":[room1, room2],
+					"rooms":[room1, room2, room3],
 					"items":[],    //has an name, description, type, sub-type, (if weaon, then dmg, attack, and other stats), -- can be in room, in another item(container type), or on an actor or the player
 					"actors":[],  //
 					"dialog":[]

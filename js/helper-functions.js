@@ -10,17 +10,17 @@
 	function getMatchedItem(words, target, property){
 
 		var sentence = words.join(" ").toLowerCase();
-		console.log("word list is:", sentence);
+		//console.log("word list is:", sentence);
 
 		//Now iterate over the target list
 		for(var i = 0; i < target.length; i++){
-			console.log("my item name is:", target[i][property]);
+			//console.log("my item name is:", target[i][property]);
 			if(sentence.search(target[i][property].toLowerCase()) != -1){
 				return target[i]; //return the item in the list that matched
 			}
 		}
 
-		return false;
+		return undefined;
 	}
 	//#####################################################################################################
 	//getMatchedItem:

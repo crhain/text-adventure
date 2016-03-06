@@ -4,7 +4,7 @@
 
 	To Do:
 		
-		- udpate move command to use new functions
+		- udpate move command to use new functions (done)
 		- update look command to show details of items and monsters
 		- finish developing item attributes and add some sample items
 		- add item related commands:
@@ -28,6 +28,8 @@
 		- create hall of  heroes and tome of adventure with system for starting games
 		- add scenes (splash screen, main menue, character creation screen)
 		
+	other features:
+		- add context commands like climb (basically wraps move cmd put only works for exits marked as climeable)
 
 	premium features:
 		- html-esque formating for text
@@ -285,30 +287,16 @@ var gameEngine = ( function(global){
 
 				//3. compare args with exits
 				//Loop through arguments list
-				for(var argIndex = 0; argIndex < args.length; argIndex++)
-				{
-					var word = args[argIndex];
-					for(var exIndex = 0; exIndex < exits.length; exIndex++){
-						var exName = exits[exIndex].name;
-						if(word.toLowerCase() == exName.toLowerCase()){
-							destination = exits[exIndex].link;
-							break;
-						}
-					}
 
-					if(destination)	break;					
-				}
-				
+				var match = getMatchedItem(args, exits, 'name')
 
-				if(destination){
-					game.setHere(destination);
+				if(match) {
+					game.setHere(match.link);
 					showCurrentRoom("You enter ");	
 				}
 				else{
-					cmdError(["You want to go where?"])
+					cmdError(["You want to go where?"]);
 				}
-				//4. a match is found, then change here to new location		
-
 			}			
 
 		}
