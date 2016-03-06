@@ -134,17 +134,19 @@ Actor.prototype.constructor = Actor;  //gives it correct constructor method
 
 
 */
+//Constructor for a basic item
 function Item(data){
+	this.id = 					data.id;
+	this.name = 				data.name;
+	this.detail_placed =		data.detail_placed;   //this represents the description of the item the first time it is viewed
+	this.detail_dropped =		data.detail_dropped  //this represents the description of the item when it is dropped
+	this.detail =				data.detail;         //this is the item detail when player looks at the item
+	this.value =				data.value;          //value in 
+	this.weight =				data.weight;
 
 }
 
-Item.prototype = Object.create(Object.prototype);
-
-
-
-
-
-
+Item.prototype = Object.create(Object.prototype); 
 
 //Object constructor for a room wrapper.  Includes some utility functions
 function Map(data, start){
@@ -209,7 +211,7 @@ Map.prototype.setHere = function(roomID){
 var Test = ( function(){
 
 	//ACTORS
-	var ralph = {id:"ralph", name:"Ralph"};
+	var ralph = {id:"ralph", name:"Ralph", detail:"a short, hairy humanoid with a toothless grin plastered on it's face."};
 	var bob = {id:"bob", name:"Bob", detail:"a large troll with a pot belly."};
 
 	//ITEMS

@@ -5,7 +5,8 @@
 	To Do:
 		
 		- udpate move command to use new functions (done)
-		- update look command to show details of items and monsters (done); should add player equiped items and exits to list
+		- update look command to show details of items and monsters (done); 
+		       should add player equiped items and exits to list
 		- finish developing item attributes and add some sample items
 		- add item related commands:
 		   - equip
@@ -46,7 +47,9 @@
 	Features:
 		- combat system for battling monsters.  monsters can persue and move into other rooms
 		- wear armor, rings, and necklaces.  fight with weapons	
-
+        - conversation system where player uses commands like ask [highlighted term] or say [set phrases like yes, no] or use non-verbal commands like smile, threaten, cower
+        - can use abbreviated words or synonoms when reforing to items and actors...
+        - can have followers or companions or befriend
 
 	Revision: 
 			
@@ -417,6 +420,11 @@ var gameEngine = ( function(global){
 		}
 		
 		//show actors
+		if(game.here.actors){
+			game.here.actors.forEach(function(actor){
+				display.showText(actor.name + " is here.");
+			} );
+		}
 
 		//add section to show monsters in the room
 	}
