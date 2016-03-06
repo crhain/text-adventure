@@ -6,11 +6,43 @@
 		
 		- udpate move command to use new functions
 		- update look command to show details of items and monsters
-		- add command to show player details (this can be moved to menu item eventually?)
+		- finish developing item attributes and add some sample items
+		- add item related commands:
+		   - equip
+		   - unequip
+		   - use, drink, eat, read 
+		- add in player stats
+		- add in actor object based on player
+		- add in combat system and simple monster ai
+		- add basic combat commands
+		   - attack
+		   - flee
+		   - status
+		- add in search command and searching bodies
+		- add in containers along with container commands
+		    - open
+		    - pick
+		    - get all
+		- add dialog system and commands
+		- add save/load system
+		- create hall of  heroes and tome of adventure with system for starting games
+		- add scenes (splash screen, main menue, character creation screen)
+		
+
+	premium features:
+		- html-esque formating for text
+		- tag system for writing text so that items, actors, etc. can be embeded in text description and portions of text can be shown or hidden based on game state
+		- spell casting system
+		- traps
+		- leveling system
+		- display images
+		- sounds
 
 		
 		
-		
+	Features:
+		- combat system for battling monsters.  monsters can persue and move into other rooms
+		- wear armor, rings, and necklaces.  fight with weapons	
 
 
 	Revision: 
@@ -115,6 +147,10 @@ var gameEngine = ( function(global){
 		{
 			command: ['get', 'take'],
 			handler: cmdGet
+		},
+		{
+			command: ['drop', 'discard'],
+			handler: cmdDrop
 		},
 		{
 			command: ['inventory', 'inv', 'pack', 'backpack', 'show inventory'],
@@ -269,7 +305,7 @@ var gameEngine = ( function(global){
 					showCurrentRoom("You enter ");	
 				}
 				else{
-					cmdError(["You want to get where?"])
+					cmdError(["You want to go where?"])
 				}
 				//4. a match is found, then change here to new location		
 
@@ -308,6 +344,25 @@ var gameEngine = ( function(global){
 				cmdError(["You want to get what?"]);
 			}
 				
+		}
+		//DROP command
+		function cmdDrop(args){
+
+			if(args.length < 1){
+				cmdError("Drop what?");
+			}
+			else{
+				//getting item by name presently, but could also pass number (index + 1)
+				var item = removeMatchedItem(args, player.inventory, 'name');
+				if(item){
+					display.showText("Dropped " + item.name);
+					game.here.items.push(item);	
+				}
+				else{
+					cmdError("You don't have one of those!");
+				}
+			}			
+
 		}
 
 		//show player inventory - takes no arguments so rest of sentence will be ignored

@@ -67,16 +67,25 @@ function Player(data){
 
 	this.inventory = [];  //list of item objects
 	//The following are set to objects representing the items the player has equped
-	this.equip;
+	this.equip ={
+		head:{},
+		neck:{},
+		chest:{},
+		lfinger:{},
+		rfinger:{},
+		rhand:{},
+		lhand:{},
+		feet:{}
+	};
 
-	//this.equip.head;  
-	//this.equip.neck;
-	//this.equip.rightFinger;
-	//this.equip.leftFinger;
-	//this.equip.chest; 		
-	//this.equip.feet;
-	//this.equip.rightHand;
-	//this.equip.leftHand;
+	this.str;
+	this.dex;
+	this.health;
+	this.armor;
+	this.attack;
+	this.defense;
+
+	this.dead = false;
 }
 
 Player.prototype = Object.create(Object.prototype);
@@ -101,6 +110,40 @@ Player.prototype.removeItemFromInventory = function(item){
 	}
 	
 };
+
+//ACTOR - object that wraps actors
+function Actor(data){
+	this.isHostile;
+};
+
+Actor.prototype = Object.create(Player.prototype);
+Actor.prototype.constructor = Actor;  //gives it correct constructor method
+
+/*
+ ITEM - object that wraps basic items
+  Item types:
+  	1. Item
+  	2. Clothing = can be worn
+  	3. Weapon
+  	  - sword
+  	  - spear
+  	  - axe
+  	4. Drink
+  	5. Food
+  	6. 
+
+
+*/
+function Item(data){
+
+}
+
+Item.prototype = Object.create(Object.prototype);
+
+
+
+
+
 
 
 //Object constructor for a room wrapper.  Includes some utility functions
