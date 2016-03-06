@@ -210,7 +210,7 @@ var Test = ( function(){
 
 	//ACTORS
 	var ralph = {id:"ralph", name:"Ralph"};
-	var bob = {id:"bob", name:"Bob"};
+	var bob = {id:"bob", name:"Bob", detail:"a large troll with a pot belly."};
 
 	//ITEMS
 	var goldKey = {id:"gkey", name:"gold key", detail:"a large, gleaming [gold key] laying on top of an old barrel."};   //hidden property that only reveals on examine or search

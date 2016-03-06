@@ -5,7 +5,7 @@
 	To Do:
 		
 		- udpate move command to use new functions (done)
-		- update look command to show details of items and monsters
+		- update look command to show details of items and monsters (done); should add player equiped items and exits to list
 		- finish developing item attributes and add some sample items
 		- add item related commands:
 		   - equip
@@ -29,6 +29,7 @@
 		- add scenes (splash screen, main menue, character creation screen)
 		
 	other features:
+	    - pass name of command matched to command handlers so they can refer to it when needed
 		- add context commands like climb (basically wraps move cmd put only works for exits marked as climeable)
 
 	premium features:
@@ -169,6 +170,7 @@ var gameEngine = ( function(global){
 	function commandInterpreter(cmdText){
 
 		var cmdExe = undefined;  //holds the command handler to be executed
+		var cmdName = undefined;
 		var cmdTokens = [];      //list of command tokens created from cmdText
 		var args = [];            //this contains non-command tokens that are passed to the command function as arguments
 		var cmdMatched = false;   //this is a hack so that I know that a cmdToken is not a command and can be pushed ot arguments list
@@ -190,6 +192,7 @@ var gameEngine = ( function(global){
 				if(cValue.command.length == 1){
 					if(tValue.toLowerCase() == cValue.command[0]){
 						cmdExe = cValue.handler;
+						cmdName = cValue.command[0];
 						cmdMatched = true;
 					}
 				}		
@@ -198,6 +201,7 @@ var gameEngine = ( function(global){
 					for(var i = 0; i<cValue.command.length; i++){
 						if(tValue.toLowerCase() == cValue.command[i]){
 							//console.log(cValue.command[i]);
+							cmdName = cValue.command[i];
 							cmdExe = cValue.handler;
 							cmdMatched = true;
 						}
@@ -215,7 +219,7 @@ var gameEngine = ( function(global){
 		} );
 
 		//if no command was found, then call cmdError
-		if(cmdExe) cmdExe(args); else cmdError();
+		if(cmdExe) cmdExe(args); else cmdError();  //insert cmdText here so that command functions can refer to the exact word matched!!!
 				
 		//!!!I was going to allow stringing of commands by pushing command token to an array, but that would be just too complex right now	
 		function removeQuotes(string){
@@ -311,7 +315,28 @@ var gameEngine = ( function(global){
 				}
 				//now check to see if words match items or monsters in area
 				else{
+					//check items in room
+					var match = getMatchedItem(args, game.here.items, 'name');
+					//If not any items, then check actors
+					if(!match)
+						match = getMatchedItem(args, game.here.actors, 'name');
+					//if not any actors, check players inventory
+					if(!match)
+						match = getMatchedItem(args, player.inventory, 'name');
+					//add exits and player equiped items here, but not right now
 
+					//something matched, so show it's detail
+					if(match){
+						if(match.detail.length > 0){
+							display.showText("You see " + match.detail);	
+						}
+						else{
+							display.showText("You see a " + match.name);
+						}							
+					}
+					else{
+						cmdError(["You don't see anything like that!"]);
+					}
 				}
 			}
 			else{
