@@ -3,7 +3,10 @@
 ############################################################################################################################################################################################
 ############################################################################################################################################################################################
 
-	
+	To Do:
+	    - add methods to display to resize it, draw it, and hide it
+		- if a block of text passed to drawText is bigger than can fit on screen (i.e. more lines than screen lines), then more is inserted and player must press <enter> to continue
+
 	Revision: 
 			I will probably need to remove line breaking for non-carriage returned lines from terminal or at least limit continuous lines involved
 			I will have to format keybuffer and push to display buffer for display similar to the way I am doing it for display

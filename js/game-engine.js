@@ -9,8 +9,8 @@
 		       should add player equiped items and exits to list
 		- finish developing item attributes and add some sample items
 		- add item related commands:
-		   - equip
-		   - unequip
+		   - equip (done)
+		   - unequip (done)
 		   - use, drink, eat, read 
 		- add in player stats
 		- add in actor object based on player
@@ -159,6 +159,14 @@ var gameEngine = ( function(global){
 			handler: cmdDrop
 		},
 		{
+			command: ['equip'],
+			handler: cmdEquip	
+		},
+		{
+			command: ['unequip'],
+			handler: cmdUnequip	
+		},
+		{
 			command: ['inventory', 'inv', 'pack', 'backpack', 'show inventory'],
 			handler: cmdInventory
 		},
@@ -295,7 +303,7 @@ var gameEngine = ( function(global){
 				//3. compare args with exits
 				//Loop through arguments list
 
-				var match = getMatchedItem(args, exits, 'name')
+				var match = getMatchedItemInList(args, exits, 'name')
 
 				if(match) {
 					game.setHere(match.link);
@@ -319,13 +327,13 @@ var gameEngine = ( function(global){
 				//now check to see if words match items or monsters in area
 				else{
 					//check items in room
-					var match = getMatchedItem(args, game.here.items, 'name');
+					var match = getMatchedItemInList(args, game.here.items, 'name');
 					//If not any items, then check actors
 					if(!match)
-						match = getMatchedItem(args, game.here.actors, 'name');
+						match = getMatchedItemInList(args, game.here.actors, 'name');
 					//if not any actors, check players inventory
 					if(!match)
-						match = getMatchedItem(args, player.inventory, 'name');
+						match = getMatchedItemInList(args, player.inventory, 'name');
 					//add exits and player equiped items here, but not right now
 
 					//something matched, so show it's detail
@@ -351,7 +359,7 @@ var gameEngine = ( function(global){
 			//need to write helper function
 			//display.showText('Gettin it!');
 
-			var item = removeMatchedItem(args, game.here.items, 'name');
+			var item = removeMatchedItemInList(args, game.here.items, 'name');
 			if(item){
 				display.showText("You recieve " + item.name);
 				player.addItemToInventory(item);
@@ -369,7 +377,7 @@ var gameEngine = ( function(global){
 			}
 			else{
 				//getting item by name presently, but could also pass number (index + 1)
-				var item = removeMatchedItem(args, player.inventory, 'name');
+				var item = removeMatchedItemInList(args, player.inventory, 'name');
 				if(item){
 					display.showText("Dropped " + item.name);
 					game.here.items.push(item);	
@@ -379,6 +387,36 @@ var gameEngine = ( function(global){
 				}
 			}			
 
+		}
+		//adds items from players inventory to equiped slots
+		function cmdEquip(args){
+			//1. get the item from inventory (if it exists)
+			var item = getMatchedItemInList(args, player.inventory, 'name');
+			//check to see if an item was found. If it was then euqip it.  If not, send error
+			if(item){
+				player.equipItem(item, item.slot);
+				display.showText("Equiped " + item.name);
+				console.log("item equiped:", player.equiped.rhand.name);
+			}
+			else{
+				cmdError(["Can't find that in your inventory!"]);
+			}
+
+		}
+		//adds items from players equiped slots to inventory
+		function cmdUnequip(args){
+			//1. check through all equpment slots for item
+			var item = getMatchedItemInObject(args, player.equiped, 'name')
+
+			//2. if found, then remove from slot and add to inventory
+			if(item){
+				player.unequipItem(item, item.slot);
+				display.showText("You unequip " + item.name);
+			}
+			else{
+				cmdError(["Nothing to unequip!"]);
+			}			
+			
 		}
 
 		//show player inventory - takes no arguments so rest of sentence will be ignored
@@ -395,7 +433,22 @@ var gameEngine = ( function(global){
 		}
 
 		function cmdPlayer(){
-			display.showText(player.name);	
+
+			//display name
+			display.showText("NAME:" + player.name);
+			//display equiped items
+			display.showText("EQUIPED:");
+
+			
+			for (slot in player.equiped){
+				if( player.equiped.hasOwnProperty(slot) ){
+					if(!player.equiped[slot]) itemName = 'nothing'; else itemName = player.equiped[slot].name;
+
+					display.showText(slot.toUpperCase() + ": " + itemName, true);
+				}
+			}
+			
+
 			//add in rest of stats once I have them
 		}
 

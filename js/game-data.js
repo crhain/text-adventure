@@ -67,15 +67,15 @@ function Player(data){
 
 	this.inventory = [];  //list of item objects
 	//The following are set to objects representing the items the player has equped
-	this.equip ={
-		head:{},
-		neck:{},
-		chest:{},
-		lfinger:{},
-		rfinger:{},
-		rhand:{},
-		lhand:{},
-		feet:{}
+	this.equiped ={
+		head:undefined,
+		neck:undefined,
+		chest:undefined,
+		lfinger:undefined,
+		rfinger:undefined,
+		rhand:undefined,
+		lhand:undefined,
+		feet:undefined
 	};
 
 	this.str;
@@ -99,17 +99,55 @@ Player.prototype.addItemToInventory = function(item){
 	this.inventory.push(item);
 }; 
 
-//Takes an object representing an item and removes from players inventory
+//Takes an object representing an item and removes from players inventory if it is present. If it is not, returns false
 Player.prototype.removeItemFromInventory = function(item){
 	//may add some code to allow subtracting from stacks
-
+	var success = false;
 	//loop through inventory looking for item
 	for(var i = 0; i < this.inventory.length; i++){
 		if(this.inventory[i].id == item.id)
+			success = true;
 			this.inventory.splice(i, 1); //delete the item from inventory if matched
 	}
-	
+
+	return success;
 };
+
+//experimental
+Player.prototype.getItemInInventory = function(words){
+	return getMatchedItemInList(words, this.inventory, 'name');
+};
+
+
+
+
+Player.prototype.equipItem = function(item, slot){
+
+	var success = false;
+
+	if(this.removeItemFromInventory(item)){
+
+		if(this.equiped[slot]){
+			this.unequipItem(item, slot);	
+			
+		}
+		this.equiped[slot] = item;  //I have to use bracket notation instead of dot notation when using a string name for an object property!
+		success = true;
+	}
+	
+	return success;	
+
+};
+
+Player.prototype.unequipItem = function(item, slot){
+
+	this.equiped[slot] = undefined;
+	this.addItemToInventory(item);
+
+	return true;
+};
+
+
 
 //ACTOR - object that wraps actors
 function Actor(data){
@@ -216,7 +254,7 @@ var Test = ( function(){
 
 	//ITEMS
 	var goldKey = {id:"gkey", name:"gold key", detail:"a large, gleaming [gold key] laying on top of an old barrel."};   //hidden property that only reveals on examine or search
-	var rustySword = {id:"rsword", name:"Rusty Sword", detail:"a [rusty sword] laying on the floor next to the barrel."};   //hidden property that only reveals on examine or search
+	var rustySword = {id:"rsword", name:"Rusty Sword", slot:'rhand', detail:"a [rusty sword] laying on the floor next to the barrel."};   //hidden property that only reveals on examine or search
 
 	//ROOMS
 	var room1 = {id:"room1", name:"Troll Room"};
