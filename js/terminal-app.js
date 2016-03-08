@@ -4,10 +4,9 @@
 ############################################################################################################################################################################################
 
 	To Do:
+	    - add marginTop, marginBottom, marginRight, and marginLeft  or maybe just a margin object and use that to determine text placement
 	    - allow for border around canvas (color, thickness); display area will automatically adjust for this border
 	    - allow for lines at borders on display elements. 
-	    - pretty up the display so that lines don't bleed through bottom
-	    - add option to clear display buffer when new text is drawn
 	    - add methods to display to resize it, draw it, and hide it
 		- if a block of text passed to drawText is bigger than can fit on screen (i.e. more lines than screen lines), then more is inserted and player must press <enter> to continue
 
@@ -411,7 +410,7 @@ Display.prototype.drawText = function(text){
 	refreshImage();
 
 	//Fit text to display height
-	if(text.length > heightInLines){
+	if(text.length >= heightInLines){
 		var overCount = text.length - heightInLines;
 		for(var c = 0; c <= overCount; c++){
 			text.shift(); //shifts first lines out as text overflows display area
@@ -480,10 +479,10 @@ Terminal.prototype.init = function(){
 	prompt = self.prompt;       //text for prompt
 	var text = prompt;  //this is a temporary string to hold key inputs in listeners
 
-	var charSize = this.font.size * 0.55;
+	//var charSize = this.font.size * 0.55;
 	var margin = 2;
-	var widthInChars = Math.round((this.display.width - this.display.x) / charSize);            //var widthInChars
-	var heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size);                 //var heightInLines
+	//var widthInChars = Math.round((this.display.width - this.display.x) / charSize);            //var widthInChars
+	//var heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size);                 //var heightInLines
 	
 
 	//variables from draw
@@ -512,7 +511,7 @@ Terminal.prototype.init = function(){
 		//Declare some basic variables
 		//console.log('hitting the keys');
 		//var widthInChars = self.widthInChars;
-		var pos = widthInChars;
+		var pos = 0;
 		var temp;
 		var command = ""; //holds a command to be added to commands array
 
@@ -598,9 +597,11 @@ Terminal.prototype.drawText = function(text){
 	//This fancy line is calling the original drawText function defined on Display - but it does not give this function access
 	// to it's variables, so we need to make variables we need public properties on the ojbect :(
 	//Object.getPrototypeOf(new Display(this.display, this.font, this.canvas)).drawText.call(this, text);
-
+	console.log("drawing:", text);
 	//var displayBuffer = this.displayBuffer
 	text = this.formatText(text);
+
+	console.log("drawing formated:", text);
 
 	var ctx = this.canvas.ctx;
 
@@ -611,6 +612,7 @@ Terminal.prototype.drawText = function(text){
 		y = this.display.y,
 		width = this.display.width,
 		height = this.display.height,
+		marginBottom = this.display.marginBottom
 		background = this.display.background;
 	var fontSize = this.font.size,
 		fontColor = this.font.color,
@@ -618,7 +620,10 @@ Terminal.prototype.drawText = function(text){
 
 	var lineHeight = fontSize;
 
-	var heightInLines = Math.floor((height - y) / fontSize); 
+	//var heightInLines = Math.floor((height - y) / fontSize); 
+	var heightInLines = Math.floor((height - marginBottom) / lineHeight); 
+
+	console.log("my height in lines:", heightInLines);
 	//var heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size); 
 
 	//Referesh the background color
@@ -631,7 +636,7 @@ Terminal.prototype.drawText = function(text){
 	refreshImage();
 
 	//Fit text to display height
-	if(text.length > heightInLines){
+	if(text.length >= heightInLines){
 		var overCount = text.length - heightInLines;
 		for(var c = 0; c <= overCount; c++){
 			text.shift(); //shifts first lines out as text overflows display area
@@ -657,7 +662,7 @@ Terminal.prototype.drawText = function(text){
 
 	}	
 
-	console.log("printing text:", text);
+	
 	//This public property holds the formatted text array used in Display.drawText
 	var cursorLineHeight = (text.length) * lineHeight;
 	
@@ -708,4 +713,27 @@ Terminal.prototype.drawText = function(text){
 	
 	
 */
+
+	canvas = new Canvas(1200, 600, 'canvas');
+
+	//Creates terminal object for inputing text and displaying the text input
+	terminal = new Terminal(
+		{
+			x:0,   //sets x position where terminal display starts
+			y:500,   //sets y position where terminal display starts
+			width:canvas.canvas.width,    //sets how wide the terminal display is
+			height:100,  //sets how far down the terminal display goes  (if I subtract more than 50ish from this or set it to too small a number, then I get error!)
+			marginBottom: 0,
+			background:'black'   //'#517F51'              //sets background color: can give word, rgb string, or hex
+		},
+		{
+			color:'white',                   //sets font color
+			size: 20,                        //sets font size
+			style: 'cursive'               //sets font type (!!!kep it a monospace font type or cursor may not track so well)
+		},
+		canvas                               //reference to canvas object that the terminal appears on.
+	);
+
+	terminal.init();
+	terminal.drawText(terminal.keyBuffer); //should call this from terminal.init
 
