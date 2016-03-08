@@ -440,6 +440,7 @@ var gameEngine = ( function(global){
 			playerdisplay.clear();
 			//display name
 			playerdisplay.showText("NAME:" + player.name);
+			playerdisplay.showText("ATTACK:" + player.attack + "     DEFENSE:" + player.defense + "     ARMOR:" + player.armor);
 			//display equiped items
 			playerdisplay.showText("EQUIPED:");
 

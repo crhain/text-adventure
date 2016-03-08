@@ -131,10 +131,11 @@ Player.prototype.equipItem = function(item, slot){
 
 	if(this.removeItemFromInventory(item)){ //remove item from inventory and continue if succesfull
 
-		if(this.equiped[slot]){  //if something is in the equiped slot...
+		if(this.equiped[slot]){  //if something is in the equiped slot...			
 			this.unequipItem(this.equiped[slot], slot);	 //unequip that item (putting it in inventory)
 		}
 		this.equiped[slot] = item;  //I have to use bracket notation instead of dot notation when using a string name for an object property!
+		this.addItemStats(item); //update Player stats based on item added
 		success = true;
 	}
 	
@@ -146,6 +147,7 @@ Player.prototype.unequipItem = function(item, slot){
 
 	//console.log('I am unequiping', item.name, "from my", slot, "slot");
 	this.addItemToInventory(item);
+	this.removeItemStats(item);
 	this.equiped[slot] = undefined;
 	
 
@@ -154,12 +156,24 @@ Player.prototype.unequipItem = function(item, slot){
 
 //This will remove stats for items when player unequips them
 Player.prototype.removeItemStats = function(item){
-	//we could iterate over all the item stats and see if the player also posses those stats
+	for(stat in this){
+		if(this.hasOwnProperty(stat)){
+			if(stat in item){
+				this[stat] -= item[stat]
+			}
+		}
+	}
 }
 
 //This will add stats for items when player equips them
 Player.prototype.addItemStats = function(item){
-
+	for(stat in this){
+		if(this.hasOwnProperty(stat)){
+			if(stat in item){
+				this[stat] += item[stat]
+			}
+		}
+	}
 }
 
 
