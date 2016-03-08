@@ -14,8 +14,7 @@
 		   - use, drink, eat, read 
 		- add in player stats (done)
 		- add in actor object based on player
-		- add in combat system and simple monster ai
-		- add basic combat commands
+		- add in combat system and simple monster ai along with basic combat commands:
 		   - attack
 		   - flee
 		   - status
@@ -193,51 +192,54 @@ var gameEngine = ( function(global){
 		//1. use an re to extract all strings or words into cmdTokens list.
 		cmdTokens = cmdText.match(reTokens);
 		
-		//2. go through cmdTokens list and see if they are in the commands list
-		cmdTokens.forEach(function(tValue, tIndex){
-			
-			cmdMatched = false;
+		if(cmdTokens){
+			//2. go through cmdTokens list and see if they are in the commands list
+			cmdTokens.forEach(function(tValue, tIndex){
+				
+				cmdMatched = false;
 
-			commands.forEach(function(cValue, cIndex){
-				//3. if a cmdToken is in the commands list, then add its handler to cmdExe
-				if(cValue.command.length == 1){
-					if(tValue.toLowerCase() == cValue.command[0]){
-						cmdExe = cValue.handler;
-						cmdName = cValue.command[0];
-						cmdMatched = true;
-					}
-				}		
-				else{
+				commands.forEach(function(cValue, cIndex){
 					//3. if a cmdToken is in the commands list, then add its handler to cmdExe
-					for(var i = 0; i<cValue.command.length; i++){
-						if(tValue.toLowerCase() == cValue.command[i]){
-							//console.log(cValue.command[i]);
-							cmdName = cValue.command[i];
+					if(cValue.command.length == 1){
+						if(tValue.toLowerCase() == cValue.command[0]){
 							cmdExe = cValue.handler;
+							cmdName = cValue.command[0];
 							cmdMatched = true;
 						}
 					}		
-				}				
-			} );
-			
-			//If this cmdToken is not a command, then push it to the args list
-			if(!cmdMatched){
-					tValue = removeQuotes(tValue);
-					args.push(tValue);
-					//console.log("pushing", tValue);
-				}
-	
-		} );
-
-		//if no command was found, then call cmdError
-		if(cmdExe) cmdExe(args); else cmdError();  //insert cmdText here so that command functions can refer to the exact word matched!!!
+					else{
+						//3. if a cmdToken is in the commands list, then add its handler to cmdExe
+						for(var i = 0; i<cValue.command.length; i++){
+							if(tValue.toLowerCase() == cValue.command[i]){
+								//console.log(cValue.command[i]);
+								cmdName = cValue.command[i];
+								cmdExe = cValue.handler;
+								cmdMatched = true;
+							}
+						}		
+					}				
+				} );
 				
+				//If this cmdToken is not a command, then push it to the args list
+				if(!cmdMatched){
+						tValue = removeQuotes(tValue);
+						args.push(tValue);
+						//console.log("pushing", tValue);
+					}
+		
+			} );
+
+			//if no command was found, then call cmdError
+			if(cmdExe) cmdExe(args); else cmdError();  //insert cmdText here so that command functions can refer to the exact word matched!!!
+				
+
+		}
+		
 		//!!!I was going to allow stringing of commands by pushing command token to an array, but that would be just too complex right now	
 		function removeQuotes(string){
 			string = string.replace(/"/g, '');
 			return string;
 		}
-
 
 	}
 
@@ -510,13 +512,13 @@ var gameEngine = ( function(global){
 				x:0,   //sets x position where terminal display starts
 				y:500,   //sets y position where terminal display starts
 				width:canvas.canvas.width,    //sets how wide the terminal display is
-				height:canvas.canvas.height - 2,  //sets how far down the terminal display goes
-				background:'#517F51'              //sets background color: can give word, rgb string, or hex
+				height:canvas.canvas.height,  //sets how far down the terminal display goes  (if I subtract more than 50ish from this or set it to too small a number, then I get error!)
+				background:'black'   //'#517F51'              //sets background color: can give word, rgb string, or hex
 			},
 			{
-				color:'black',                   //sets font color
+				color:'white',                   //sets font color
 				size: 20,                        //sets font size
-				style: 'monospace'               //sets font type (!!!kep it a monospace font type or cursor may not track so well)
+				style: 'cursive'               //sets font type (!!!kep it a monospace font type or cursor may not track so well)
 			},
 			canvas                               //reference to canvas object that the terminal appears on.
 		);

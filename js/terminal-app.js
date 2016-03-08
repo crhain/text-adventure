@@ -4,6 +4,8 @@
 ############################################################################################################################################################################################
 
 	To Do:
+	    - allow for border around canvas (color, thickness); display area will automatically adjust for this border
+	    - allow for lines at borders on display elements. 
 	    - pretty up the display so that lines don't bleed through bottom
 	    - add option to clear display buffer when new text is drawn
 	    - add methods to display to resize it, draw it, and hide it
@@ -170,8 +172,14 @@ Display.prototype.showText = function(text, nopad){
 
 //draw/refresh the background
 Display.prototype.refreshBackground = function(){
+		
 		this.canvas.ctx.fillStyle = this.display.background;
 		this.canvas.ctx.fillRect(this.display.x, this.display.y, this.display.width, this.display.height);
+
+		//this.canvas.ctx.strokeStyle = 'orange';
+		//this.canvas.ctx.lineWidth = 8
+		//this.canvas.ctx.strokeRect(this.display.x-3, this.display.y-3, this.display.width+3, this.display.height+3);
+
 	
 }
 
@@ -474,9 +482,26 @@ Terminal.prototype.init = function(){
 
 	var charSize = this.font.size * 0.55;
 	var margin = 2;
-	var widthInChars = Math.round((this.display.width - this.display.x) / charSize - margin);            //var widthInChars
+	var widthInChars = Math.round((this.display.width - this.display.x) / charSize);            //var widthInChars
 	var heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size);                 //var heightInLines
 	
+
+	//variables from draw
+	/*
+	var x = this.display.x,
+		y = this.display.y,
+		width = this.display.width,
+		height = this.display.height,
+	var fontSize = this.font.size,
+		fontColor = this.font.color,
+		fontStyle = this.font.style;
+
+	var lineHeight = fontSize;
+
+	var heightInLines = Math.floor((height - y) / fontSize); 
+	*/
+
+
 
 	this.drawText(self.keyBuffer);
 	//console.log("initializing terminal!", self.keyBuffer);
@@ -534,7 +559,8 @@ Terminal.prototype.init = function(){
 			self.keyBuffer[self.keyBuffer.length - 1] = text;	
 		}
 
-		//Rewdraw console text				
+		//Rewdraw console text
+
 		self.drawText(self.keyBuffer);
 		
 		
@@ -572,82 +598,81 @@ Terminal.prototype.drawText = function(text){
 	//This fancy line is calling the original drawText function defined on Display - but it does not give this function access
 	// to it's variables, so we need to make variables we need public properties on the ojbect :(
 	//Object.getPrototypeOf(new Display(this.display, this.font, this.canvas)).drawText.call(this, text);
-		
-	//Referesh the background color
-	this.refreshBackground();
-	//set font	
-	this.setFont();
 
-	var ctx = this.canvas.ctx,
-		fontSize = this.font.size,
-		fontColor = this.font.color,
-		fontStyle = this.font.style,
-		lineHeight = fontSize,
-		widthInPixels = this.display.width,  
-		x = this.display.x,
+	//var displayBuffer = this.displayBuffer
+	text = this.formatText(text);
+
+	var ctx = this.canvas.ctx;
+
+	this.refreshBackground();
+	this.setFont();
+	
+	var x = this.display.x,
 		y = this.display.y,
 		width = this.display.width,
 		height = this.display.height,
 		background = this.display.background;
+	var fontSize = this.font.size,
+		fontColor = this.font.color,
+		fontStyle = this.font.style;
 
+	var lineHeight = fontSize;
 
-	var formattedText = this.formatText(text);   //formattedText holds formmated lines of text
-	//var heightInLines = Math.floor((this.display.height - this.display.y) / fontSize);
-	var heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size); 
+	var heightInLines = Math.floor((height - y) / fontSize); 
+	//var heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size); 
 
-	
-	//console.log("My draw number of lines is:", heightInLines);
+	//Referesh the background color
 
 
 	//Get formated text.  Has to occur after refresh because that sets the font!!!
 	//var formattedText = this.formatText(text);   //formattedText holds formmated lines of text
 
+	//Refersh background image (or images?) if there are any
+	refreshImage();
+
 	//Fit text to display height
-	if(formattedText.length > heightInLines){
-		var overCount = formattedText.length - heightInLines;
-		for(var c = 0; c < overCount; c++){
-			formattedText.shift(); //shifts first lines out as text overflows display area
+	if(text.length > heightInLines){
+		var overCount = text.length - heightInLines;
+		for(var c = 0; c <= overCount; c++){
+			text.shift(); //shifts first lines out as text overflows display area
 		}
 	}
 
-	
 	//Draw contents of keyBuffer onto canvas
-	for(var i = 0; i <= formattedText.length-1; i++) {
+	for(var i = 0; i <= text.length-1; i++) {
 	
-		this.canvas.ctx.fillText(formattedText[i], x, y + (lineHeight * (i + 1)));		
+		this.canvas.ctx.fillText(text[i], x, y + (lineHeight * (i + 1)));		
 	}	
 
-	//set objects displayBuffer to formattedText so that it can be accessed outside object
-	//this.formattedText = formattedText;
-
+	
 	/*
-	function refreshBackground(){
-		this.canvas.ctx.fillStyle = background;
-		this.canvas.ctx.fillRect(x, y, width, height);
-
+	function setFont(){
 		//Set font size, type, and color
 		this.canvas.ctx.font = fontSize + "px " + fontStyle;
 		this.canvas.ctx.fillStyle = fontColor;	
-	}*/
+	}
+	*/
 
 	function refreshImage(){
 
-	}
+	}	
 
+	console.log("printing text:", text);
 	//This public property holds the formatted text array used in Display.drawText
-	var lineHeight = fontSize;
-	var cursorLineHeight = (formattedText.length) * lineHeight;
+	var cursorLineHeight = (text.length) * lineHeight;
 	
 	//DRAW THE CURSOR OBJECT
-	var cursorX = x + ctx.measureText(formattedText[formattedText.length - 1]).width; 
+	var cursorX = x + ctx.measureText(text[text.length - 1]).width; 
 	var cursorY  = y + cursorLineHeight + (lineHeight * 0.20); //+ (lineHeight);
-	if(formattedText[formattedText.length -1].length >= this.widthInPixels) {
+	
+	//The following throws an error if terminal display height is 100 or less than canvas.height
+	if(text[text.length -1].length >= this.widthInPixels) {
 		cursorY += lineHeight;
 		cursorX = x;
 	}
 		
 
-	ctx.fillStyle = 'black';
+	ctx.fillStyle = fontColor;
 	ctx.fillRect(cursorX, cursorY, fontSize * 0.55, 2);	
 	
 }

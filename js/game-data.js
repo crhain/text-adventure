@@ -111,9 +111,9 @@ Player.prototype.removeItemFromInventory = function(item){
 	for(var i = 0; i < this.inventory.length; i++){
 		if(this.inventory[i].id == item.id){
 			success = true;
-			console.log("deleting", item.name, "at index", i, "from inventory.")
+			//console.log("deleting", item.name, "at index", i, "from inventory.")
 			this.inventory.splice(i, 1); //delete the item from inventory if matched
-			console.log("inventory is now:", this.inventory);
+			//console.log("inventory is now:", this.inventory);
 		}
 	}
 
