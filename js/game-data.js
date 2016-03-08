@@ -54,13 +54,16 @@ var HoH = {
 //   these provide wrapers for game data and utility methods to retrieve and set data on those objects
 //##################################################################################################################################################################################
 
+//Note: do not give player attribute names that are the same as item attribute names or the addItemStats and removeItemStats methods will not work correctly.
 function Player(data){
 	//data is an object with the player data (either passed or object literal)
 
-	this.name = 		data.name;
-	//this.sex = 			data.sex;
-	//this.age = 			data.age;
-	//this.detail = 		data.detail;
+
+	this.fullname = 	data.fullname;
+	this.sex = 			'Male';   //set it from character creation once that feature implimented
+	this.age = 			26;
+	//this.physical = 		data.physical;
+	//this.bio =			data.bio
 	this.baseAttack =			50;
 	this.baseDefense =			50;
 	this.baseHealth	=			50;

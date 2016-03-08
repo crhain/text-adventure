@@ -7,12 +7,12 @@
 		- udpate move command to use new functions (done)
 		- update look command to show details of items and monsters (done); 
 		       should add player equiped items and exits to list
-		- finish developing item attributes and add some sample items
+		- finish developing item attributes and add some sample items (done)
 		- add item related commands:
 		   - equip (done)
 		   - unequip (done)
 		   - use, drink, eat, read 
-		- add in player stats
+		- add in player stats (done)
 		- add in actor object based on player
 		- add in combat system and simple monster ai
 		- add basic combat commands
@@ -88,7 +88,7 @@ var gameEngine = ( function(global){
 	
 
 	var player = new Player({
-		name: "Carl The Destroyer"
+		fullname: "Carl The Destroyer"
 	});   //holds data on current character the player is using.  will just set this here right now for testing.
 
 
@@ -439,8 +439,9 @@ var gameEngine = ( function(global){
 
 			playerdisplay.clear();
 			//display name
-			playerdisplay.showText("NAME:" + player.name);
-			playerdisplay.showText("ATTACK:" + player.attack + "     DEFENSE:" + player.defense + "     ARMOR:" + player.armor);
+			playerdisplay.showText("NAME:" + player.fullname);
+			playerdisplay.showText("SEX:" + player.sex + "     AGE:" + player.age);
+			playerdisplay.showText("ATTACK:" + player.attack + "     DEFENSE:" + player.defense + "     ARMOR:" + player.armor + "     HEALTH:" + player.baseHealth + "/" + player.health);
 			//display equiped items
 			playerdisplay.showText("EQUIPED:");
 
