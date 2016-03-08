@@ -4,6 +4,8 @@
 ############################################################################################################################################################################################
 
 	To Do:
+	    - pretty up the display so that lines don't bleed through bottom
+	    - add option to clear display buffer when new text is drawn
 	    - add methods to display to resize it, draw it, and hide it
 		- if a block of text passed to drawText is bigger than can fit on screen (i.e. more lines than screen lines), then more is inserted and player must press <enter> to continue
 
@@ -373,6 +375,9 @@ Display.prototype.drawText = function(text){
 	//var displayBuffer = this.displayBuffer
 
 	var ctx = this.canvas.ctx;
+
+	this.refreshBackground();
+	this.setFont();
 	
 	var x = this.display.x,
 		y = this.display.y,
@@ -385,11 +390,11 @@ Display.prototype.drawText = function(text){
 
 	var lineHeight = fontSize;
 
-	var heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size); 
+	var heightInLines = Math.floor((height - y) / fontSize); 
+	//var heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size); 
 
 	//Referesh the background color
-	this.refreshBackground();
-	this.setFont();
+
 
 	//Get formated text.  Has to occur after refresh because that sets the font!!!
 	//var formattedText = this.formatText(text);   //formattedText holds formmated lines of text
@@ -400,7 +405,7 @@ Display.prototype.drawText = function(text){
 	//Fit text to display height
 	if(text.length > heightInLines){
 		var overCount = text.length - heightInLines;
-		for(var c = 0; c < overCount; c++){
+		for(var c = 0; c <= overCount; c++){
 			text.shift(); //shifts first lines out as text overflows display area
 		}
 	}
@@ -412,12 +417,13 @@ Display.prototype.drawText = function(text){
 	}	
 
 	
-
+	/*
 	function setFont(){
 		//Set font size, type, and color
 		this.canvas.ctx.font = fontSize + "px " + fontStyle;
 		this.canvas.ctx.fillStyle = fontColor;	
 	}
+	*/
 
 	function refreshImage(){
 

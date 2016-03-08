@@ -351,6 +351,7 @@ var gameEngine = ( function(global){
 				}
 			}
 			else{
+
 				showCurrentRoom("You are in ");  //just show the room if there are no arguments
 			}		
 		}
@@ -396,7 +397,7 @@ var gameEngine = ( function(global){
 			if(item){
 				player.equipItem(item, item.slot);
 				display.showText("Equiped " + item.name);
-				console.log("item equiped:", player.equiped.rhand.name);
+				//console.log("item equiped:", player.equiped.rhand.name);
 			}
 			else{
 				cmdError(["Can't find that in your inventory!"]);
@@ -434,17 +435,18 @@ var gameEngine = ( function(global){
 
 		function cmdPlayer(){
 
+			playerdisplay.clear();
 			//display name
-			display.showText("NAME:" + player.name);
+			playerdisplay.showText("NAME:" + player.name);
 			//display equiped items
-			display.showText("EQUIPED:");
+			playerdisplay.showText("EQUIPED:");
 
 			
 			for (slot in player.equiped){
 				if( player.equiped.hasOwnProperty(slot) ){
 					if(!player.equiped[slot]) itemName = 'nothing'; else itemName = player.equiped[slot].name;
 
-					display.showText(slot.toUpperCase() + ": " + itemName, true);
+					playerdisplay.showText(slot.toUpperCase() + ": " + itemName, true);
 				}
 			}
 			
@@ -463,6 +465,8 @@ var gameEngine = ( function(global){
 	function showCurrentRoom(intro){
 		var text = "";
 		if(intro) 	text = intro;
+
+		display.clear(); //clear the buffer first to make it  pretty
 		//show room description
 		display.showText(text + game.here.detail);
 		//show item descriptions
@@ -513,6 +517,25 @@ var gameEngine = ( function(global){
 			canvas                               //reference to canvas object that the terminal appears on.
 		);
 
+		
+		global.playerdisplay = new Display(
+			{
+				x:0,
+				y:0,
+				width:canvas.canvas.width,
+				height:canvas.canvas.height - 100,
+				background: 'black'
+			},
+			{
+				color:'white',
+				size: 20,
+				style: 'cursive'
+			},
+			canvas
+
+		);
+		
+
 		//create a new display
 		global.display = new Display(
 			{
@@ -524,7 +547,7 @@ var gameEngine = ( function(global){
 			},
 			{
 				color:'white',
-				size: 26,
+				size: 20,
 				style: 'cursive'
 			},
 			canvas
@@ -534,6 +557,8 @@ var gameEngine = ( function(global){
 		//Start Terminal & draw initial text
 		terminal.init();
 		terminal.drawText(terminal.keyBuffer); //should call this from terminal.init
+		//start player stats display
+		playerdisplay.init();
 		//start display
 		display.init();
 
