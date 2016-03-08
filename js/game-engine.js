@@ -512,8 +512,8 @@ var gameEngine = ( function(global){
 				x:0,   //sets x position where terminal display starts
 				y:500,   //sets y position where terminal display starts
 				width:canvas.canvas.width,    //sets how wide the terminal display is
-				height:canvas.canvas.height,  //sets how far down the terminal display goes  (if I subtract more than 50ish from this or set it to too small a number, then I get error!)
-				background:'black'   //'#517F51'              //sets background color: can give word, rgb string, or hex
+				height:100,  //sets how far down the terminal display goes  (if I subtract more than 50ish from this or set it to too small a number, then I get error!)
+				background:'#517F51'              //sets background color: can give word, rgb string, or hex
 			},
 			{
 				color:'white',                   //sets font color

@@ -621,7 +621,7 @@ Terminal.prototype.drawText = function(text){
 	var lineHeight = fontSize;
 
 	//var heightInLines = Math.floor((height - y) / fontSize); 
-	var heightInLines = Math.floor((height - marginBottom) / lineHeight); 
+	var heightInLines = Math.floor(height / lineHeight); 
 
 	console.log("my height in lines:", heightInLines);
 	//var heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size); 
@@ -714,26 +714,5 @@ Terminal.prototype.drawText = function(text){
 	
 */
 
-	canvas = new Canvas(1200, 600, 'canvas');
 
-	//Creates terminal object for inputing text and displaying the text input
-	terminal = new Terminal(
-		{
-			x:0,   //sets x position where terminal display starts
-			y:500,   //sets y position where terminal display starts
-			width:canvas.canvas.width,    //sets how wide the terminal display is
-			height:100,  //sets how far down the terminal display goes  (if I subtract more than 50ish from this or set it to too small a number, then I get error!)
-			marginBottom: 0,
-			background:'black'   //'#517F51'              //sets background color: can give word, rgb string, or hex
-		},
-		{
-			color:'white',                   //sets font color
-			size: 20,                        //sets font size
-			style: 'cursive'               //sets font type (!!!kep it a monospace font type or cursor may not track so well)
-		},
-		canvas                               //reference to canvas object that the terminal appears on.
-	);
-
-	terminal.init();
-	terminal.drawText(terminal.keyBuffer); //should call this from terminal.init
 
