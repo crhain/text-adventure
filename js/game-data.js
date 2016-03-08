@@ -61,30 +61,31 @@ function Player(data){
 	//this.sex = 			data.sex;
 	//this.age = 			data.age;
 	//this.detail = 		data.detail;
-	//this.maxStr =		data.maxStr;
-	//this.maxDex = 		data.maxDex;
-	//this.maxHealth	=	data.maxHealth;
+	this.baseAttack =			50;
+	this.baseDefense =			50;
+	this.baseHealth	=			50;
+	this.baseArmor =			0;
 
+	
 	this.inventory = [];  //list of item objects
 	//The following are set to objects representing the items the player has equped
 	this.equiped ={
-		head:undefined,
+		head:{id:'metalhelm1', name: "Old Metal Helm", detail: "a simple metal helm.", slot:'head', armor: 2, defense: 0, weight: 1, value: 5},
 		neck:undefined,
-		chest:undefined,
+		chest:{id:'lthrjrk', name: "Leather Jerkin", detail: "a leather jerkin.", slot:'chest', armor: 8, defense: -5, weight: 15, value: 20},
 		lfinger:undefined,
 		rfinger:undefined,
-		rhand:undefined,
+		rhand:{id:'woodclub', name: "wood club", detail: " a wood club with a few knicks in it.", slot:'rhand', damage: 10, weight: 5, value: 1},
 		lhand:undefined,
-		feet:undefined
+		feet:{id:'wornlthrboots', name: "Worn Leather Boots", detail: " some old leather boots.", slot:'feet', armor: 2, defense: 0, weight: 1, value: 5}
 	};
 
-	this.str;
-	this.dex;
-	this.health;
-	this.armor;
-	this.attack;
-	this.defense;
+	this.attack =				50;
+	this.defense = 				50;
+	this.health =				50;
+	this.armor =				12;
 
+	
 	this.dead = false;
 }
 
@@ -105,9 +106,12 @@ Player.prototype.removeItemFromInventory = function(item){
 	var success = false;
 	//loop through inventory looking for item
 	for(var i = 0; i < this.inventory.length; i++){
-		if(this.inventory[i].id == item.id)
+		if(this.inventory[i].id == item.id){
 			success = true;
+			console.log("deleting", item.name, "at index", i, "from inventory.")
 			this.inventory.splice(i, 1); //delete the item from inventory if matched
+			console.log("inventory is now:", this.inventory);
+		}
 	}
 
 	return success;
@@ -125,11 +129,10 @@ Player.prototype.equipItem = function(item, slot){
 
 	var success = false;
 
-	if(this.removeItemFromInventory(item)){
+	if(this.removeItemFromInventory(item)){ //remove item from inventory and continue if succesfull
 
-		if(this.equiped[slot]){
-			this.unequipItem(item, slot);	
-			
+		if(this.equiped[slot]){  //if something is in the equiped slot...
+			this.unequipItem(this.equiped[slot], slot);	 //unequip that item (putting it in inventory)
 		}
 		this.equiped[slot] = item;  //I have to use bracket notation instead of dot notation when using a string name for an object property!
 		success = true;
@@ -141,11 +144,23 @@ Player.prototype.equipItem = function(item, slot){
 
 Player.prototype.unequipItem = function(item, slot){
 
-	this.equiped[slot] = undefined;
+	//console.log('I am unequiping', item.name, "from my", slot, "slot");
 	this.addItemToInventory(item);
+	this.equiped[slot] = undefined;
+	
 
 	return true;
 };
+
+//This will remove stats for items when player unequips them
+Player.prototype.removeItemStats = function(item){
+	//we could iterate over all the item stats and see if the player also posses those stats
+}
+
+//This will add stats for items when player equips them
+Player.prototype.addItemStats = function(item){
+
+}
 
 
 
@@ -254,7 +269,7 @@ var Test = ( function(){
 
 	//ITEMS
 	var goldKey = {id:"gkey", name:"gold key", detail:"a large, gleaming [gold key] laying on top of an old barrel."};   //hidden property that only reveals on examine or search
-	var rustySword = {id:"rsword", name:"Rusty Sword", slot:'rhand', detail:"a [rusty sword] laying on the floor next to the barrel."};   //hidden property that only reveals on examine or search
+	var rustySword = {id:"rustysword1", name:"Rusty Sword", slot:'rhand', damage:20, detail:"a [rusty sword] laying on the floor next to the barrel."};   //hidden property that only reveals on examine or search
 
 	//ROOMS
 	var room1 = {id:"room1", name:"Troll Room"};

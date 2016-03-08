@@ -395,9 +395,11 @@ var gameEngine = ( function(global){
 			var item = getMatchedItemInList(args, player.inventory, 'name');
 			//check to see if an item was found. If it was then euqip it.  If not, send error
 			if(item){
+				//call player equipItem method to equip the item and remove equiped items in slot
 				player.equipItem(item, item.slot);
-				display.showText("Equiped " + item.name);
-				//console.log("item equiped:", player.equiped.rhand.name);
+				//display text saying item was equiped
+				display.showText("Equiped " + item.name);				
+				
 			}
 			else{
 				cmdError(["Can't find that in your inventory!"]);
