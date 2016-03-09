@@ -123,8 +123,10 @@ Player.prototype.equipItem = function(item, slot){
 
 	if(this.removeItemFromInventory(item)){ //remove item from inventory and continue if succesfull
 
-		if(this.equiped[slot]){  //if something is in the equiped slot...			
-			this.unequipItem(this.equiped[slot], slot);	 //unequip that item (putting it in inventory)
+		if(this.equiped[slot] && this.equiped[slot].id != 'empty'){  //if something is in the equiped slot other than 'empty' item			
+			
+			this.unequipItem(this.equiped[slot], slot);	 //unequip that item (putting it in inventory)	
+						
 		}
 		this.equiped[slot] = item;  //I have to use bracket notation instead of dot notation when using a string name for an object property!
 		this.addItemStats(item); //update Player stats based on item added
@@ -137,12 +139,16 @@ Player.prototype.equipItem = function(item, slot){
 
 Player.prototype.unequipItem = function(item, slot){
 
-	//console.log('I am unequiping', item.name, "from my", slot, "slot");
-	this.addItemToInventory(item);
-	this.removeItemStats(item);
-	this.equiped[slot] = undefined;
-	
+	if(item.id == 'empty'){ //if empty empty equiped then it cannot be unequiped
 
+		return false;
+	}
+	else{
+		this.addItemToInventory(item);
+		this.removeItemStats(item);
+		this.equiped[slot] = {id:'empty', name:'None'}; //this is the empty object - it cannot be unequiped for obvious resons	
+	}
+	
 	return true;
 };
 

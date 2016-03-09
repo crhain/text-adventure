@@ -412,12 +412,10 @@ var gameEngine = ( function(global){
 			//1. get the item from inventory (if it exists)
 			var item = getMatchedItemInList(args, player.inventory, 'name');
 			//check to see if an item was found. If it was then euqip it.  If not, send error
-			if(item){
+			if(item && player.equipItem(item, item.slot)){
 				//call player equipItem method to equip the item and remove equiped items in slot
-				player.equipItem(item, item.slot);
 				//display text saying item was equiped
-				display.showText("Equiped " + item.name);				
-				
+				display.showText("Equiped " + item.name);					
 			}
 			else{
 				cmdError(["Can't find that in your inventory!"]);
@@ -430,14 +428,12 @@ var gameEngine = ( function(global){
 			var item = getMatchedItemInObject(args, player.equiped, 'name')
 
 			//2. if found, then remove from slot and add to inventory
-			if(item){
-				player.unequipItem(item, item.slot);
-				display.showText("You unequip " + item.name);
+			if(item && player.unequipItem(item, item.slot)){				
+				display.showText("You unequip " + item.name);	
 			}
 			else{
-				cmdError(["Nothing to unequip!"]);
+				cmdError(["Nothing to unequip!"]);	
 			}			
-			
 		}
 
 		//show player inventory - takes no arguments so rest of sentence will be ignored
@@ -466,8 +462,8 @@ var gameEngine = ( function(global){
 			
 			for (slot in player.equiped){
 				if( player.equiped.hasOwnProperty(slot) ){
-					if(!player.equiped[slot]) itemName = 'nothing'; else itemName = player.equiped[slot].name;
-
+					//if(!player.equiped[slot]) itemName = 'nothing'; else itemName = player.equiped[slot].name;
+					itemName = player.equiped[slot].name;
 					playerdisplay.showText(slot.toUpperCase() + ": " + itemName, true);
 				}
 			}
@@ -599,12 +595,12 @@ var gameEngine = ( function(global){
 									inventory: [],
 									equiped: {
 										head:{id:'metalhelm1', name: "Old Metal Helm", type:'armor', detail: "a simple metal helm.", slot:'head', armor: 2, defense: 0, weight: 1, value: 5},
-										neck:'empty',
+										neck:{id:'empty', name:'None'},
 										chest:{id:'lthrjrk', name: "Leather Jerkin", type:'armor', detail: "a leather jerkin.", slot:'chest', armor: 8, defense: -5, weight: 15, value: 20},
-										lfinger:'empty',
-										rfinger:'empty',
-										rhand:{id:'woodclub', name: "wood club", type:'weapon', detail: " a wood club with a few knicks in it.", slot:'rhand', damage: 10, weight: 5, value: 1},
-										lhand:'empty',
+										lfinger:{id:'empty', name:'None'},
+										rfinger:{id:'empty', name:'None'},
+										rhand:{id:'woodclub', name: "Wood Club", type:'weapon', detail: " a wood club with a few knicks in it.", slot:'rhand', damage: 10, weight: 5, value: 1},
+										lhand:{id:'empty', name:'None'},
 										feet:{id:'wornlthrboots', name: "Worn Leather Boots", type: 'armor', detail: " some old leather boots.", slot:'feet', armor: 2, defense: 0, weight: 1, value: 5}
 									},
 									attack:	 	50,
