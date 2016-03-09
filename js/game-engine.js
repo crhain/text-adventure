@@ -5,32 +5,41 @@
 	To Do:
 
 		
-		- add in ojbects for game elements and reconfigure engine to work with them. (done) 
+	
+		- move bulk of key commands usable by actors as well as players out to player object to be inherieted by actors and then command functions just act as wrappers.
+		 for instance, commands like get, drop, equip, unequip, move, use, and attack are needed by non-player actors as well.  Also say can be basis for conversations...
 		
-		- udpate move command to use new functions (done)
+		- add basic save/load system (using commands for now, but using menu latter on)
+		- add scenes (splash screen, main menue, character creation screen)
 		- update look command to show details of items and monsters (done); 
 		       should add player equiped items and exits to list
-		- finish developing item attributes and add some sample items (done)
-		- add item related commands:
-		   - equip (done)
-		   - unequip (done)
-		   - use, drink, eat, read 
-		- add in player stats (done)
-		- add in actor object based on player
 		- add in combat system and simple monster ai along with basic combat commands:
 		   - attack
 		   - flee
 		   - status
-		- add in search command and searching bodies
+		
 		- add in containers along with container commands
 		    - open
 		    - pick
 		    - get all
-		- add dialog system and commands
-		- add save/load system
+		    - search
+		- add in search command and searching bodies
+		- add dialog system and commands		
 		- create hall of  heroes and tome of adventure with system for starting games
-		- add scenes (splash screen, main menue, character creation screen)
+		- add use, drink, eat, read commands
 		
+	done:
+
+		- add in ojbects for game elements (Adventure, player, actor, item) and reconfigure engine to work with them. (done) 
+		- udpate move command to use new functions (done)
+		- finish developing item attributes and add some sample items (done)
+		- add item related commands:
+		   - equip (done)
+		   - unequip (done)
+		- add in player stats (done)
+
+
+
 	other features:
 	    - pass name of command matched to command handlers so they can refer to it when needed
 		- add context commands like climb (basically wraps move cmd put only works for exits marked as climeable)
@@ -63,8 +72,7 @@
 			- game-engine.js   holds main game logic and starts the whole thing rolling
 
 	Notes:
-		- move bulk of key commands usable by actors as well as players out to player object to be inherieted by actors and then command functions just act as wrappers.
-		 for instance, commands like get, drop, equip, unequip, move, use, and attack are needed by non-player actors as well.  Also say can be basis for conversations...
+		
 	    - construct room description from bits of text.  for instance, when the character moves, it starts with text "You walk into "
 	       then it adds the rooms description "a small, round room with a high ceiling lost in shadows."  this is teh short description.  added to it
 	       are the short descriptions for exits, items, and actors.  look command brings up a longer description.  Examine command or search brings up hidden description
@@ -91,9 +99,7 @@ var gameEngine = ( function(global){
 	//var here = {};  //game data for current location of player. This engine level varialbe is a wraper for the game.here property?
 	
 
-	var player = new Player({
-		fullname: "Carl The Destroyer"
-	});   //holds data on current character the player is using.  will just set this here right now for testing.
+	var player;  //holds data on current character the player is using.  will just set this here right now for testing.
 
 
 
@@ -177,6 +183,10 @@ var gameEngine = ( function(global){
 		{
 			command: ['player', 'show player'],
 			handler: cmdPlayer
+		},
+		{
+			command: ['save'],
+			handler: cmdSave
 		}
 	];
 											
@@ -466,6 +476,12 @@ var gameEngine = ( function(global){
 			//add in rest of stats once I have them
 		}
 
+		function cmdSave(args){
+			game.save();
+			player.save();
+			display.showText("Saving...");
+		}
+
 		//ERROR - displays a simple error message
 		function cmdError(args){
 			//display.showText(' ');
@@ -560,7 +576,46 @@ var gameEngine = ( function(global){
 
 	function loadGame(){
 		//for now, just load the first game
-		game = new Adventure(games[0]);  //can give a second argument giving starting room or set it by setting here property
+		
+		if(window.localStorage.getItem(application)){
+			console.log('loading saved data...');
+
+			player = new Player(JSON.parse(window.localStorage.getItem('player')));
+			var jsonDataGame = JSON.parse(window.localStorage.getItem(application));
+			game = new Adventure(jsonDataGame);
+			game.setHere(jsonDataGame.here.id);
+			
+
+		}
+		else{
+			player = new Player({
+									fullname: "Carl The Destroyer",
+									sex:'Male',   
+									age: 26,
+									baseAttack: 50,
+									baseDefense: 50,
+									baseHealth:	50,
+									baseArmor: 0,
+									inventory: [],
+									equiped: {
+										head:{id:'metalhelm1', name: "Old Metal Helm", type:'armor', detail: "a simple metal helm.", slot:'head', armor: 2, defense: 0, weight: 1, value: 5},
+										neck:undefined,
+										chest:{id:'lthrjrk', name: "Leather Jerkin", type:'armor', detail: "a leather jerkin.", slot:'chest', armor: 8, defense: -5, weight: 15, value: 20},
+										lfinger:undefined,
+										rfinger:undefined,
+										rhand:{id:'woodclub', name: "wood club", type:'weapon', detail: " a wood club with a few knicks in it.", slot:'rhand', damage: 10, weight: 5, value: 1},
+										lhand:undefined,
+										feet:{id:'wornlthrboots', name: "Worn Leather Boots", type: 'armor', detail: " some old leather boots.", slot:'feet', armor: 2, defense: 0, weight: 1, value: 5}
+									},
+									attack:	 	50,
+									defense: 	50,
+									health: 	50,
+									armor:		12
+								}); 
+			game = new Adventure(games[0]);  //can give a second argument giving starting room or set it by setting here property	
+		}
+		
+		
 		console.log("loading...", game.title, "by", game.author);
 		console.log(game.detail);
 		console.log("first room is:", game.rooms[0].name);

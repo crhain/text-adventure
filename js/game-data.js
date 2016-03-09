@@ -54,7 +54,7 @@ var HoH = {
 //   these provide wrapers for game data and utility methods to retrieve and set data on those objects
 //##################################################################################################################################################################################
 
-
+var application = 'textAdventure';
 
 
 

@@ -64,6 +64,24 @@ function Player(data){
 
 Player.prototype = Object.create(Object.prototype);
 
+Player.prototype.save = function(){
+	//window.localStorage.setItem(application, this.here.id);
+	//if(window.localStorage.getItem(application)){
+	//	window.localStorage.removeItem(application);
+	//}
+	
+
+	//I need go through all rooms, reading out all their properties that are not methods
+	var jsonData = JSON.stringify(this);
+		
+	window.localStorage.setItem('player', jsonData);
+	
+	//window.localStorage[application].data = this;  //see if this works
+};
+
+Player.prototype.clearSave = function(){
+	window.localStorage.removeItem('player');
+};
 
 
 //Takes an object representing an item and adds to players inventory

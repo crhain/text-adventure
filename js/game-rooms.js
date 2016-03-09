@@ -27,6 +27,9 @@ OVERVIEW: object constructor for an Adventure.  This contains room objects repre
 	OUTPUTS: returns an Adventure object
 #############################################################################################################################################
 */
+var store = {"id":"room2", "name":"Neat", "detail": "really neato, right?"};
+var strStore = JSON.stringify(store);
+
 function Adventure(data){
 
 	//sets starting location to start.  If no start argument given, then set to first room
@@ -70,6 +73,30 @@ Adventure.prototype.init = function(rooms){
 	
 
 }
+
+//creates save file for adventure data
+//you cannot save objects on localStorage, so we must convert all objects to json strings using JSON.stringify(data);
+//and then when loading we must convert back to an object using JSON.parse(jsonstring);
+Adventure.prototype.save = function(){
+	//window.localStorage.setItem(application, this.here.id);
+	//if(window.localStorage.getItem(application)){
+	//	window.localStorage.removeItem(application);
+	//}
+	
+
+	//I need go through all rooms, reading out all their properties that are not methods
+	var jsonData = JSON.stringify(this);
+		
+	window.localStorage.setItem(application, jsonData);
+	
+	//window.localStorage[application].data = this;  //see if this works
+};
+
+Adventure.prototype.clearSave = function(){
+	window.localStorage.removeItem(application);
+};
+
+
 
 
 
