@@ -3,6 +3,8 @@
 ############################################################################################################################################################################################
 
 	To Do:
+
+		- add in ojbects for game elements and reconfigure engine to work with them.  
 		
 		- udpate move command to use new functions (done)
 		- update look command to show details of items and monsters (done); 
@@ -561,12 +563,12 @@ var gameEngine = ( function(global){
 		);
 
 		//Start Terminal & draw initial text
-		terminal.init();
-		terminal.drawText(terminal.keyBuffer); //should call this from terminal.init
+		//terminal.init();
+		 //should call this from terminal.init
 		//start player stats display
 		playerdisplay.init();
 		//start display
-		display.init();
+		//display.init();
 
 		//load in some map data.  will take an argument allow game to choose map
 		loadGame();
@@ -580,7 +582,7 @@ var gameEngine = ( function(global){
 
 	function loadGame(){
 		//for now, just load the first game
-		game = new Map(games[0]);  //can give a second argument giving starting room or set it by setting here property
+		game = new Adventure(games[0]);  //can give a second argument giving starting room or set it by setting here property
 		console.log("loading...", game.title, "by", game.author);
 		console.log(game.detail);
 		console.log("first room is:", game.rooms[0].name);

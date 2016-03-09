@@ -87,7 +87,7 @@ function Display(displayArea, font, canvas){
 	this.displayBuffer = [];        //holds formated text to be displayed - do not use directly. this is a hack so that Terminal.drawText can reference Display.drawText properly. should call this something else?
 	//this.formattedText = [];        //This is used by drawText function to format text lines.  It has to be sotred here so that other objects that
 	                                //inherit but modify the drawText function
-
+	this.refreshBackground();
 
 	/*
 		keyboardBuffer = array of lines entered into the keyboard.  Each entry is created by a carriage return
@@ -118,7 +118,7 @@ Display.prototype = Object.create(Object.prototype);
 //			None
 //------------------------------------------------------------------------------------------------
 Display.prototype.init = function(){
-	this.refreshBackground();		
+	//this.refreshBackground();		
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -456,6 +456,8 @@ function Terminal(displayArea, font, canvas){
 	this.keyBuffer = [this.prompt];   		//holds lines of text entered by keystroke, creating new entries in the array for carriage returns
 	this.commands = [];         				//holds text for each command. Whenever enter is hit, the last line in keyBuffer is assigned to this
 
+	this.init();
+
 }
 
 //Set up Terminal object constructor to inheriet methods from Display
@@ -484,7 +486,6 @@ Terminal.prototype.init = function(){
 	//var widthInChars = Math.round((this.display.width - this.display.x) / charSize);            //var widthInChars
 	//var heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size);                 //var heightInLines
 	
-
 	//variables from draw
 	/*
 	var x = this.display.x,
