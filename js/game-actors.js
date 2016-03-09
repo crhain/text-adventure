@@ -30,33 +30,34 @@ function Player(data){
 
 
 	this.fullname = 	data.fullname;
-	this.sex = 			'Male';   //set it from character creation once that feature implimented
-	this.age = 			26;
+	this.sex = 			data.sex;   //set it from character creation once that feature implimented
+	this.age = 			data.age;
 	//this.physical = 		data.physical;
 	//this.bio =			data.bio
-	this.baseAttack =			50;
-	this.baseDefense =			50;
-	this.baseHealth	=			50;
-	this.baseArmor =			0;
+	this.baseAttack =			data.baseAttack;
+	this.baseDefense =			data.baseDefense;
+	this.baseHealth	=			data.baseHealth;
+	this.baseArmor =			data.baseArmor;
 
 	
-	this.inventory = [];  //list of item objects
+	this.inventory = 			data.inventory;  //list of item objects
 	//The following are set to objects representing the items the player has equped
-	this.equiped ={
-		head:{id:'metalhelm1', name: "Old Metal Helm", type:'armor', detail: "a simple metal helm.", slot:'head', armor: 2, defense: 0, weight: 1, value: 5},
-		neck:undefined,
-		chest:{id:'lthrjrk', name: "Leather Jerkin", type:'armor', detail: "a leather jerkin.", slot:'chest', armor: 8, defense: -5, weight: 15, value: 20},
-		lfinger:undefined,
-		rfinger:undefined,
-		rhand:{id:'woodclub', name: "wood club", type:'weapon', detail: " a wood club with a few knicks in it.", slot:'rhand', damage: 10, weight: 5, value: 1},
-		lhand:undefined,
-		feet:{id:'wornlthrboots', name: "Worn Leather Boots", type: 'armor', detail: " some old leather boots.", slot:'feet', armor: 2, defense: 0, weight: 1, value: 5}
-	};
 
-	this.attack =				50;
-	this.defense = 				50;
-	this.health =				50;
-	this.armor =				12;
+	//	head:{id:'metalhelm1', name: "Old Metal Helm", type:'armor', detail: "a simple metal helm.", slot:'head', armor: 2, defense: 0, weight: 1, value: 5},
+	//	neck:undefined,
+//		chest:{id:'lthrjrk', name: "Leather Jerkin", type:'armor', detail: "a leather jerkin.", slot:'chest', armor: 8, defense: -5, weight: 15, value: 20},
+//		lfinger:undefined,
+//		rfinger:undefined,
+//		rhand:{id:'woodclub', name: "wood club", type:'weapon', detail: " a wood club with a few knicks in it.", slot:'rhand', damage: 10, weight: 5, value: 1},
+//		lhand:undefined,
+//		feet:{id:'wornlthrboots', name: "Worn Leather Boots", type: 'armor', detail: " some old leather boots.", slot:'feet', armor: 2, defense: 0, weight: 1, value: 5}
+	
+	this.equiped = 				data.equiped;
+
+	this.attack =				data.attack;
+	this.defense = 				data.defense;
+	this.health =				data.health;
+	this.armor =				data.armor;
 
 	
 	this.dead = false;

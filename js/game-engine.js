@@ -599,12 +599,12 @@ var gameEngine = ( function(global){
 									inventory: [],
 									equiped: {
 										head:{id:'metalhelm1', name: "Old Metal Helm", type:'armor', detail: "a simple metal helm.", slot:'head', armor: 2, defense: 0, weight: 1, value: 5},
-										neck:undefined,
+										neck:'empty',
 										chest:{id:'lthrjrk', name: "Leather Jerkin", type:'armor', detail: "a leather jerkin.", slot:'chest', armor: 8, defense: -5, weight: 15, value: 20},
-										lfinger:undefined,
-										rfinger:undefined,
+										lfinger:'empty',
+										rfinger:'empty',
 										rhand:{id:'woodclub', name: "wood club", type:'weapon', detail: " a wood club with a few knicks in it.", slot:'rhand', damage: 10, weight: 5, value: 1},
-										lhand:undefined,
+										lhand:'empty',
 										feet:{id:'wornlthrboots', name: "Worn Leather Boots", type: 'armor', detail: " some old leather boots.", slot:'feet', armor: 2, defense: 0, weight: 1, value: 5}
 									},
 									attack:	 	50,
