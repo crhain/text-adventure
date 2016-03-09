@@ -27,10 +27,10 @@ OVERVIEW: object constructor for an Adventure.  This contains room objects repre
 	OUTPUTS: returns an Adventure object
 #############################################################################################################################################
 */
-function Adventure(data, start){
+function Adventure(data){
 
 	//sets starting location to start.  If no start argument given, then set to first room
-	if(start) this.here = start; else this.here = data.rooms[0];
+	
 
 	//wrap game object elements
 	this.title = data.title;
@@ -38,16 +38,27 @@ function Adventure(data, start){
 	this.detail = data.detail;
 	this.rooms = [];
 
+	
 	//Get rooms
 	for(var r = 0; r < data.rooms.length; r++){
 		this.rooms.push(new Room(data.rooms[r]));
 	}
 	
+	var startRoom = this.getRoomByID(data.start);
+	if(startRoom){
+		this.here = startRoom;	
+	}
+	else{
+		//this returns last room in array for some reason?  But array is in right order... so.
+		this.here = this.rooms[0];
+	}
+	
+	
+	//if(start) this.here = start; else this.here = data.rooms[0];
+
 	//this.items = data.items;
 	//this.actors = data.actors;
 	//this.dialog = data.dialog;
-
-
 
 };
 
@@ -78,9 +89,7 @@ Adventure.prototype.getRoomByID = function(id){
 		}
 	}
 
-
 	return room;
-
 };
 
 //A wrapper function that sets Map object here property by retrieving room with getRoomByID method
@@ -105,6 +114,7 @@ function Room(data){
 	//create actor list
 	for(var a = 0; a < data.actors.length; a++){
 		this.actors.push(new Actor(data.actors[a]));
+		console.log('creating ', this.actors[a].name);
 	}
 	
 
@@ -132,3 +142,27 @@ function Room(data){
 
 
 Room.prototype = Object.create(Object.prototype); 
+
+
+//Show room description and contents
+Room.prototype.show = function(display, intro){
+	var text = "";
+		if(intro) 	text = intro;
+
+		display.clear(); //clear the buffer first to make it  pretty
+		//show room description
+		display.showText(text + this.detail);
+		//show item descriptions
+		if(this.items){
+			this.items.forEach(function(item){
+				display.showText("You see " + item.detail);
+			} );	
+		}
+		
+		//show actors
+		if(this.actors){
+			this.actors.forEach(function(actor){
+				display.showText(actor.name + " is here.");
+			} );
+		}
+}

@@ -37,9 +37,23 @@ function Item(data){
 
 Item.prototype = Object.create(Object.prototype); 
 
+//Method: displays the items details
+Item.prototype.show = function(display, intro){
+	var text = "";
+		if(intro) 	text = intro;
+
+		//show room description
+		display.showText(text + this.detail);		
+}
+
+
+
 
 
 function Armor(data){
+
+	Item.call(this, data);
+
 	this.type = data.type;
 	this.slot = data.slot;
 	this.armor = data.armor;
@@ -51,9 +65,12 @@ Armor.prototype.constructor = Armor;  //gives it correct constructor method
 
 
 function Weapon(data){
-	this.type = data.type;
-	this.slot = data.slot;
-	this.damage = data.damage;
+
+	Item.call(this, data);
+
+	this.type = 		data.type;
+	this.slot = 		data.slot;
+	this.damage = 		data.damage;
 
 };
 

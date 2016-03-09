@@ -4,7 +4,8 @@
 
 	To Do:
 
-		- add in ojbects for game elements and reconfigure engine to work with them.  
+		
+		- add in ojbects for game elements and reconfigure engine to work with them. (done) 
 		
 		- udpate move command to use new functions (done)
 		- update look command to show details of items and monsters (done); 
@@ -62,6 +63,8 @@
 			- game-engine.js   holds main game logic and starts the whole thing rolling
 
 	Notes:
+		- move bulk of key commands usable by actors as well as players out to player object to be inherieted by actors and then command functions just act as wrappers.
+		 for instance, commands like get, drop, equip, unequip, move, use, and attack are needed by non-player actors as well.  Also say can be basis for conversations...
 	    - construct room description from bits of text.  for instance, when the character moves, it starts with text "You walk into "
 	       then it adds the rooms description "a small, round room with a high ceiling lost in shadows."  this is teh short description.  added to it
 	       are the short descriptions for exits, items, and actors.  look command brings up a longer description.  Examine command or search brings up hidden description
@@ -296,7 +299,6 @@ var gameEngine = ( function(global){
 
 				//1. get exits list
 				var destination = undefined;  //destination holds the roomID from exits list
-				var hits = [];  //an array that contains a list of possible exit matches
 				var exits = game.here.exits;  //wraps exits on current room for ease of typing
 
 
@@ -311,7 +313,7 @@ var gameEngine = ( function(global){
 
 				if(match) {
 					game.setHere(match.link);
-					showCurrentRoom("You enter ");	
+					game.here.show(global.display, "You enter ");	
 				}
 				else{
 					cmdError(["You want to go where?"]);
@@ -343,10 +345,12 @@ var gameEngine = ( function(global){
 					//something matched, so show it's detail
 					if(match){
 						if(match.detail.length > 0){
-							display.showText("You see " + match.detail);	
+							match.show(display, "You see ");
+							//display.showText("You see " + match.detail);	
 						}
 						else{
-							display.showText("You see a " + match.name);
+							match.show(display, "You see a ");
+							//display.showText("You see a " + match.name);
 						}							
 					}
 					else{
@@ -356,7 +360,7 @@ var gameEngine = ( function(global){
 			}
 			else{
 
-				showCurrentRoom("You are in ");  //just show the room if there are no arguments
+				game.here.show(global.display, "You are in ");  //just show the room if there are no arguments
 			}		
 		}
 		//get's item and adds to player inventory
@@ -468,32 +472,6 @@ var gameEngine = ( function(global){
 			if(args) display.showText(args); else display.showText('Hmmm?');
 		}
 
-	//wraper function for showing room description	- 
-	//arguments: intro - optinoal intro text (remember to add space after)
-	function showCurrentRoom(intro){
-		var text = "";
-		if(intro) 	text = intro;
-
-		display.clear(); //clear the buffer first to make it  pretty
-		//show room description
-		display.showText(text + game.here.detail);
-		//show item descriptions
-		if(game.here.items){
-			game.here.items.forEach(function(item){
-				display.showText("You see " + item.detail);
-			} );	
-		}
-		
-		//show actors
-		if(game.here.actors){
-			game.here.actors.forEach(function(actor){
-				display.showText(actor.name + " is here.");
-			} );
-		}
-
-		//add section to show monsters in the room
-	}
-
 	//handels moving between scenes (only one scene right now)
 	//  instead of a function, we could create objects representing scenes and store them
 	//  inside of a sceneManager object...
@@ -574,7 +552,7 @@ var gameEngine = ( function(global){
 		loadGame();
 
 		//The following is for testing purpose only.  Get ride of this once we are able to laod in text from data files
-		showCurrentRoom("You find yourself in ");
+		game.here.show(global.display, "You find yourself in ");
 
 		//Start the game by calling main()
 		main(); 

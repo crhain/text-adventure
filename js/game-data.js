@@ -99,6 +99,7 @@ var Test = ( function(){
 					"title": "TEST!",
 					"author": "Lord Niah",
 					"detail": "A very testy kind of test game!",
+					"start": 'room1',
 					"rooms":[room1, room2, room3],
 					"items":[],    //has an name, description, type, sub-type, (if weaon, then dmg, attack, and other stats), -- can be in room, in another item(container type), or on an actor or the player
 					"actors":[],  //

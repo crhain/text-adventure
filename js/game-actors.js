@@ -165,6 +165,9 @@ merchtants.
 #############################################################################################################################################
 */
 function Actor(data){
+
+	//Player.call(this, data);  //currently the player uses fullName property and actors use name properties
+
 	this.id = data.id;
 	this.name = data.name;
 	this.detail = data.detail;
@@ -173,3 +176,12 @@ function Actor(data){
 
 Actor.prototype = Object.create(Player.prototype);
 Actor.prototype.constructor = Actor;  //gives it correct constructor method
+
+//Show actors detailed description
+Actor.prototype.show = function(display, intro){
+	var text = "";
+		if(intro) 	text = intro;
+
+		//show room description
+		display.showText(text + this.detail);		
+}

@@ -598,11 +598,11 @@ Terminal.prototype.drawText = function(text){
 	//This fancy line is calling the original drawText function defined on Display - but it does not give this function access
 	// to it's variables, so we need to make variables we need public properties on the ojbect :(
 	//Object.getPrototypeOf(new Display(this.display, this.font, this.canvas)).drawText.call(this, text);
-	console.log("drawing:", text);
+	//console.log("drawing:", text);
 	//var displayBuffer = this.displayBuffer
 	text = this.formatText(text);
 
-	console.log("drawing formated:", text);
+	//console.log("drawing formated:", text);
 
 	var ctx = this.canvas.ctx;
 
@@ -624,7 +624,7 @@ Terminal.prototype.drawText = function(text){
 	//var heightInLines = Math.floor((height - y) / fontSize); 
 	var heightInLines = Math.floor(height / lineHeight); 
 
-	console.log("my height in lines:", heightInLines);
+	//console.log("my height in lines:", heightInLines);
 	//var heightInLines = Math.floor((this.display.height - this.display.y) / this.font.size); 
 
 	//Referesh the background color
