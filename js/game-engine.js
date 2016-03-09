@@ -9,7 +9,7 @@
 		- move bulk of key commands usable by actors as well as players out to player object to be inherieted by actors and then command functions just act as wrappers.
 		 for instance, commands like get, drop, equip, unequip, move, use, and attack are needed by non-player actors as well.  Also say can be basis for conversations...
 		
-		- add basic save/load system (using commands for now, but using menu latter on)
+		
 		- add scenes (splash screen, main menue, character creation screen)
 		- update look command to show details of items and monsters (done); 
 		       should add player equiped items and exits to list
@@ -29,7 +29,7 @@
 		- add use, drink, eat, read commands
 		
 	done:
-
+		- add basic save/load system (using commands for now, but using menu latter on) (done)  : final version 
 		- add in ojbects for game elements (Adventure, player, actor, item) and reconfigure engine to work with them. (done) 
 		- udpate move command to use new functions (done)
 		- finish developing item attributes and add some sample items (done)
@@ -187,6 +187,10 @@ var gameEngine = ( function(global){
 		{
 			command: ['save'],
 			handler: cmdSave
+		},
+		{
+			command: ['delete'],
+			handler: cmdDelete
 		}
 	];
 											
@@ -472,10 +476,18 @@ var gameEngine = ( function(global){
 			//add in rest of stats once I have them
 		}
 
+		//save game from terminal
 		function cmdSave(args){
 			game.save();
 			player.save();
 			display.showText("Saving...");
+		}
+
+		//delete save game from terminal - this is only temporary
+		function cmdDelete(args){
+			window.localStorage.removeItem('player');
+			window.localStorage.removeItem(application);
+			display.showText("Deleting save data...");
 		}
 
 		//ERROR - displays a simple error message
