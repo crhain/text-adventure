@@ -8,13 +8,14 @@
 	
 		- move bulk of key commands usable by actors as well as players out to player object to be inherieted by actors and then command functions just act as wrappers.
 		 for instance, commands like get, drop, equip, unequip, move, use, and attack are needed by non-player actors as well.  Also say can be basis for conversations...
-		
+		- add update() function that will handel things like monster ai and events.
 		
 		- add scenes (splash screen, main menue, character creation screen)
 		- update look command to show details of items and monsters (done); 
 		       should add player equiped items and exits to list
 		- add in combat system and simple monster ai along with basic combat commands:
-		   - attack
+		   - attack - works by calculating hit and damage, then sets actor to hostile; update will then look at all actors in room and make hostile ones attack.
+		              could have a faction system so that monsters might attack others.
 		   - flee
 		   - status
 		
@@ -126,6 +127,7 @@ var gameEngine = ( function(global){
 		if(terminal.commands.length > 0){
 			var cmdText = terminal.commands.shift();
 			commandInterpreter(cmdText);	
+			//update();  //this is only called if a command was entered, as game in turns based on keyboard input - need to write this function
 		}
 				
 	}

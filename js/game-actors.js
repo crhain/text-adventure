@@ -65,13 +65,68 @@ function Player(data){
 
 Player.prototype = Object.create(Object.prototype);
 
+
+//=============================================================================================================================================================================
+//                   PUBLIC METHODS
+//=============================================================================================================================================================================
+
+
+//===========================================================================================
+//EQUIP ITEM METHOD - removes item from intenvory and adds it an equipment slot
+//===========================================================================================
+
+
+
+//===========================================================================================
+//EQUIP ITEM METHOD - removes item from intenvory and adds it an equipment slot
+//===========================================================================================
+Player.prototype.equipItem = function(item, slot){
+
+	var success = false;
+
+	if(this.removeItemFromInventory(item)){ //remove item from inventory and continue if succesfull
+
+		if(this.equiped[slot] && this.equiped[slot].id != 'empty'){  //if something is in the equiped slot other than 'empty' item			
+			
+			this.unequipItem(this.equiped[slot], slot);	 //unequip that item (putting it in inventory)	
+						
+		}
+		this.equiped[slot] = item;  //I have to use bracket notation instead of dot notation when using a string name for an object property!
+		this.addItemStats(item); //update Player stats based on item added
+		success = true;
+	}
+	
+	return success;	
+
+};
+
+//===========================================================================================
+//UNEQUIP ITEM METHOD - removes item from slot and places into inventory
+//===========================================================================================
+Player.prototype.unequipItem = function(item, slot){
+
+	if(item.id == 'empty'){ //if empty empty equiped then it cannot be unequiped
+
+		return false;
+	}
+	else{
+		this.addItemToInventory(item);
+		this.removeItemStats(item);
+		this.equiped[slot] = {id:'empty', name:'None'}; //this is the empty object - it cannot be unequiped for obvious resons	
+	}
+	
+	return true;
+};
+
+
+//===========================================================================================
+//SAVE METHOD - saves player data to local storage
+//===========================================================================================
 Player.prototype.save = function(){
 	//window.localStorage.setItem(application, this.here.id);
 	//if(window.localStorage.getItem(application)){
 	//	window.localStorage.removeItem(application);
-	//}
-	
-
+	//}	
 	//I need go through all rooms, reading out all their properties that are not methods
 	var jsonData = JSON.stringify(this);
 		
@@ -80,19 +135,36 @@ Player.prototype.save = function(){
 	//window.localStorage[application].data = this;  //see if this works
 };
 
+
+//===========================================================================================
+//CLEAR SAVE METHOD - removes saved player data from localStorage
+//===========================================================================================
 Player.prototype.clearSave = function(){
 	window.localStorage.removeItem('player');
 };
 
 
-//Takes an object representing an item and adds to players inventory
+
+
+
+//=============================================================================================================================================================================
+//                   PRIVATE METHODS
+//=============================================================================================================================================================================
+
+
+//===========================================================================================
+//ADD ITEM TO INVENTORY METHOD - adds item to players inventory
+//===========================================================================================
 Player.prototype.addItemToInventory = function(item){
 	//may have to add some code to check for duplicates or
 	//allow for stacking of items
 	this.inventory.push(item);
 }; 
 
-//Takes an object representing an item and removes from players inventory if it is present. If it is not, returns false
+
+//===========================================================================================
+//REMOVE ITEM FROM INVENTORY METHOD - removes an item from players inventory
+//===========================================================================================
 Player.prototype.removeItemFromInventory = function(item){
 	//may add some code to allow subtracting from stacks
 	var success = false;
@@ -114,45 +186,9 @@ Player.prototype.getItemInInventory = function(words){
 	return getMatchedItemInList(words, this.inventory, 'name');
 };
 
-
-
-
-Player.prototype.equipItem = function(item, slot){
-
-	var success = false;
-
-	if(this.removeItemFromInventory(item)){ //remove item from inventory and continue if succesfull
-
-		if(this.equiped[slot] && this.equiped[slot].id != 'empty'){  //if something is in the equiped slot other than 'empty' item			
-			
-			this.unequipItem(this.equiped[slot], slot);	 //unequip that item (putting it in inventory)	
-						
-		}
-		this.equiped[slot] = item;  //I have to use bracket notation instead of dot notation when using a string name for an object property!
-		this.addItemStats(item); //update Player stats based on item added
-		success = true;
-	}
-	
-	return success;	
-
-};
-
-Player.prototype.unequipItem = function(item, slot){
-
-	if(item.id == 'empty'){ //if empty empty equiped then it cannot be unequiped
-
-		return false;
-	}
-	else{
-		this.addItemToInventory(item);
-		this.removeItemStats(item);
-		this.equiped[slot] = {id:'empty', name:'None'}; //this is the empty object - it cannot be unequiped for obvious resons	
-	}
-	
-	return true;
-};
-
-//This will remove stats for items when player unequips them
+//===========================================================================================
+//REMOVE ITEM STATS - removes item stats from player (used when an item is unequiped)
+//===========================================================================================
 Player.prototype.removeItemStats = function(item){
 	for(stat in this){
 		if(this.hasOwnProperty(stat)){
@@ -163,7 +199,9 @@ Player.prototype.removeItemStats = function(item){
 	}
 }
 
-//This will add stats for items when player equips them
+//===========================================================================================
+//ADD ITEM STATS - adds item stats  (used when an item is equiped)
+//===========================================================================================
 Player.prototype.addItemStats = function(item){
 	for(stat in this){
 		if(this.hasOwnProperty(stat)){
@@ -173,8 +211,6 @@ Player.prototype.addItemStats = function(item){
 		}
 	}
 }
-
-
 
 
 /*
@@ -196,7 +232,7 @@ function Actor(data){
 	this.id = data.id;
 	this.name = data.name;
 	this.detail = data.detail;
-	this.isHostile;
+	this.hostile;
 };
 
 Actor.prototype = Object.create(Player.prototype);
