@@ -13,17 +13,18 @@
 		- add scenes (splash screen, main menue, character creation screen)
 		- update look command to show details of items and monsters (done); 
 		       should add player equiped items and exits to list
+		- add in containers along with container commands
+		    - open
+		    - pick
+		    - get all
+		    - search
 		- add in combat system and simple monster ai along with basic combat commands:
 		   - attack - works by calculating hit and damage, then sets actor to hostile; update will then look at all actors in room and make hostile ones attack.
 		              could have a faction system so that monsters might attack others.
 		   - flee
 		   - status
 		
-		- add in containers along with container commands
-		    - open
-		    - pick
-		    - get all
-		    - search
+		
 		- add in search command and searching bodies
 		- add dialog system and commands		
 		- create hall of  heroes and tome of adventure with system for starting games
@@ -129,6 +130,9 @@ var gameEngine = ( function(global){
 			commandInterpreter(cmdText);	
 			//update();  //this is only called if a command was entered, as game in turns based on keyboard input - need to write this function
 		}
+
+		update();
+
 				
 	}
 
@@ -179,6 +183,10 @@ var gameEngine = ( function(global){
 			handler: cmdUnequip	
 		},
 		{
+			command: ['open'],
+			handler: cmdOpen
+		},
+		{
 			command: ['inventory', 'inv', 'pack', 'backpack', 'show inventory'],
 			handler: cmdInventory
 		},
@@ -203,7 +211,7 @@ var gameEngine = ( function(global){
 		var cmdExe = undefined;  //holds the command handler to be executed
 		var cmdName = undefined;
 		var cmdTokens = [];      //list of command tokens created from cmdText
-		var args = [];            //this contains non-command tokens that are passed to the command function as arguments
+		var words = [];            //this contains non-command tokens that are passed to the command function as arguments
 		var cmdMatched = false;   //this is a hack so that I know that a cmdToken is not a command and can be pushed ot arguments list
 
 		
@@ -241,17 +249,17 @@ var gameEngine = ( function(global){
 					}				
 				} );
 				
-				//If this cmdToken is not a command, then push it to the args list
+				//If this cmdToken is not a command, then push it to the words list
 				if(!cmdMatched){
 						tValue = removeQuotes(tValue);
-						args.push(tValue);
+						words.push(tValue);
 						//console.log("pushing", tValue);
 					}
 		
 			} );
 
 			//if no command was found, then call cmdError
-			if(cmdExe) cmdExe(args); else cmdError();  //insert cmdText here so that command functions can refer to the exact word matched!!!
+			if(cmdExe) cmdExe(words); else cmdError();  //insert cmdText here so that command functions can refer to the exact word matched!!!
 				
 
 		}
@@ -270,7 +278,7 @@ var gameEngine = ( function(global){
 	//--------------------------------------------------------------------------------
 
 		//QUIT - exit the game
-		function cmdQuit(args)
+		function cmdQuit(words)
 		{
 			running = false;
 			//display.showText(' ');
@@ -278,21 +286,21 @@ var gameEngine = ( function(global){
 		}
 
 		//wraper for display clear method.  clears the screen of text.
-		function cmdClear(args){
+		function cmdClear(words){
 			display.clear();	
 		}
 
 		//SAY - say whatever words came after the command
-		function cmdSay(args){
+		function cmdSay(words){
 			//if there is only one arg, then say that
-			if(args){
-				if(args.length == 1){
+			if(words){
+				if(words.length == 1){
 					//display.showText(' ');
-					display.showText('You say: ' + args);
+					display.showText('You say: ' + words);
 				}
-				else if(args.length > 1){
+				else if(words.length > 1){
 					//display.showText(' ');
-					display.showText('You say: ' + args.join(" ") );
+					display.showText('You say: ' + words.join(" ") );
 				}
 			}
 			else{
@@ -303,29 +311,20 @@ var gameEngine = ( function(global){
 		}
 
 		//MOVE - takes the name of a door and will move player to connecting room
-		function cmdMove(args)
+		function cmdMove(words)
 		{
 												
-			if(!args){
+			if(!words){
 				cmdError();
 			}
 			else{
-
-				//If I allow for multi word names, I will have to match multiple arges. Let's just do single names for now
-
 				//1. get exits list
 				var destination = undefined;  //destination holds the roomID from exits list
 				var exits = game.here.exits;  //wraps exits on current room for ease of typing
 
 
-				//2. we need a way to match individual args with multiword door names
-				//    we could return lists of possible hits (with id) and refine it
-				//    by iterating untill we are either through entire list or we get a single match
-
-				//3. compare args with exits
-				//Loop through arguments list
-
-				var match = getMatchedItemInList(args, exits, 'name')
+				//2. compare words with exits using helper function
+				var match = getMatchedItemInList(words, exits, 'name')
 
 				if(match) {
 					game.setHere(match.link);
@@ -338,10 +337,12 @@ var gameEngine = ( function(global){
 
 		}
 		//shows details of items, actors, or the room if no arguments passed
-		function cmdLook(args){
+		function cmdLook(words){
+
+			//Note: add logic for looking at containers.  If they are open, then show contents in description.
 			
-			if(args.length > 0){ //if there are arguments, we need to find out what they are								
-				var sentence = args.join(" ");
+			if(words.length > 0){ //if there are arguments, we need to find out what they are								
+				var sentence = words.join(" ");
 				//show players inventory
 				if(sentence.search("inventory") != -1){  //show inventory (might split this out)
 					cmdInventory();									
@@ -349,13 +350,13 @@ var gameEngine = ( function(global){
 				//now check to see if words match items or monsters in area
 				else{
 					//check items in room
-					var match = getMatchedItemInList(args, game.here.items, 'name');
+					var match = getMatchedItemInList(words, game.here.items, 'name');
 					//If not any items, then check actors
 					if(!match)
-						match = getMatchedItemInList(args, game.here.actors, 'name');
+						match = getMatchedItemInList(words, game.here.actors, 'name');
 					//if not any actors, check players inventory
 					if(!match)
-						match = getMatchedItemInList(args, player.inventory, 'name');
+						match = getMatchedItemInList(words, player.inventory, 'name');
 					//add exits and player equiped items here, but not right now
 
 					//something matched, so show it's detail
@@ -380,14 +381,37 @@ var gameEngine = ( function(global){
 			}		
 		}
 		//get's item and adds to player inventory
-		function cmdGet(args){
+		function cmdGet(words){
 			//need to write helper function
 			//display.showText('Gettin it!');
+			var searchObj = game.here;
+			var match = getMatchedItemInList(words, searchObj.items, 'name');
 
-			var item = removeMatchedItemInList(args, game.here.items, 'name');
-			if(item){
-				display.showText("You recieve " + item.name);
-				player.addItemToInventory(item);
+			//if item not found in room, iterate over all existing items looking for containers that are open
+			if(!match){
+				for(var i = 0; i < searchObj.items.length; i++){
+					if(searchObj.items[i].type == 'container' && !searchObj.items[i].closed){
+						match = getMatchedItemInList(words, searchObj.items[i].contents, 'name');
+						if(match){
+							searchObj = searchObj.items[i];  
+							break;
+						}
+					}
+				}
+					
+				
+			}
+
+			if(match){
+				if(!match.fixed){
+					display.showText("You recieve " + match.name);
+					searchObj.removeItem(match);
+					player.addItemToInventory(match);	
+				}				
+				else{
+					display.showText("That is too heavy to carry!");
+				}
+				
 			}
 			else{
 				cmdError(["You want to get what?"]);
@@ -395,14 +419,14 @@ var gameEngine = ( function(global){
 				
 		}
 		//DROP command
-		function cmdDrop(args){
+		function cmdDrop(words){
 
-			if(args.length < 1){
+			if(words.length < 1){
 				cmdError("Drop what?");
 			}
 			else{
 				//getting item by name presently, but could also pass number (index + 1)
-				var item = removeMatchedItemInList(args, player.inventory, 'name');
+				var item = removeMatchedItemInList(words, player.inventory, 'name');
 				if(item){
 					display.showText("Dropped " + item.name);
 					game.here.items.push(item);	
@@ -414,9 +438,9 @@ var gameEngine = ( function(global){
 
 		}
 		//adds items from players inventory to equiped slots
-		function cmdEquip(args){
+		function cmdEquip(words){
 			//1. get the item from inventory (if it exists)
-			var item = getMatchedItemInList(args, player.inventory, 'name');
+			var item = getMatchedItemInList(words, player.inventory, 'name');
 			//check to see if an item was found. If it was then euqip it.  If not, send error
 			if(item && player.equipItem(item, item.slot)){
 				//call player equipItem method to equip the item and remove equiped items in slot
@@ -429,9 +453,9 @@ var gameEngine = ( function(global){
 
 		}
 		//adds items from players equiped slots to inventory
-		function cmdUnequip(args){
+		function cmdUnequip(words){
 			//1. check through all equpment slots for item
-			var item = getMatchedItemInObject(args, player.equiped, 'name')
+			var item = getMatchedItemInObject(words, player.equiped, 'name')
 
 			//2. if found, then remove from slot and add to inventory
 			if(item && player.unequipItem(item, item.slot)){				
@@ -440,6 +464,34 @@ var gameEngine = ( function(global){
 			else{
 				cmdError(["Nothing to unequip!"]);	
 			}			
+		}
+
+
+		function cmdOpen(words){
+			var item = getMatchedItemInObject(words, game.here.items, 'name')
+			if(item){
+				if(item.type == 'container'){
+					//1. set state to opened
+					item.closed = false;
+					//2. show contents of container
+					if(item.contents){
+						display.showText("The " + item.name + " contains:");
+						item.contents.forEach(function(item, index){
+							display.showText((index + 1) + ". " + item.name, true);
+						} );
+					}
+					else{
+						display.showText("The " + item.name + " is empty.");
+					}
+
+				}
+				else{
+					cmdError(["You cannot open that!"]);
+				}
+
+			}
+
+			//add code for opening doors here - if feature added.			
 		}
 
 		//show player inventory - takes no arguments so rest of sentence will be ignored
@@ -479,24 +531,35 @@ var gameEngine = ( function(global){
 		}
 
 		//save game from terminal
-		function cmdSave(args){
+		function cmdSave(words){
 			game.save();
 			player.save();
 			display.showText("Saving...");
 		}
 
 		//delete save game from terminal - this is only temporary
-		function cmdDelete(args){
+		function cmdDelete(words){
 			window.localStorage.removeItem('player');
 			window.localStorage.removeItem(application);
 			display.showText("Deleting save data...");
 		}
 
 		//ERROR - displays a simple error message
-		function cmdError(args){
+		function cmdError(words){
 			//display.showText(' ');
-			if(args) display.showText(args); else display.showText('Hmmm?');
+			if(words) display.showText(words); else display.showText('Hmmm?');
 		}
+
+	//update game variables and handel events and monster ai
+	function update(){
+
+		//1. loop through list of monsters in current room checking for hostil or dead
+
+		//2. If they are hostil, they will attack player (no complex AI right now)
+
+		//3. If they are dead they do nothing right now, but will be replaced by a corpose item? A container that can be looted
+
+	}	
 
 	//handels moving between scenes (only one scene right now)
 	//  instead of a function, we could create objects representing scenes and store them

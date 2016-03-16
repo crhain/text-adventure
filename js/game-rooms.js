@@ -155,6 +155,9 @@ function Room(data){
 			}							
 			else if(data.items[i].type == 'weapon'){
 				this.items.push(new Weapon(data.items[i]));
+			}
+			else if(data.items[i].type == 'container'){
+				this.items.push(new Container(data.items[i]));
 			}			  			
 			else{
 				this.items.push(new Item(data.items[i]));  
@@ -192,4 +195,14 @@ Room.prototype.show = function(display, intro){
 				display.showText(actor.name + " is here.");
 			} );
 		}
+}
+
+Room.prototype.removeItem = function(item){
+	//find item in rooms list of items
+	for(var i = 0; i < this.items.length; i++){
+		if(item.id == this.items[i].id){
+			this.items.splice(i, 1);
+		}
+	}
+	
 }

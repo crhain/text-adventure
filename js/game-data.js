@@ -76,12 +76,15 @@ var Test = ( function(){
 	//ITEMS
 	var goldKey = {id:"gkey", name:"gold key", detail:"a large, gleaming [gold key] laying on top of an old barrel."};   //hidden property that only reveals on examine or search
 	var rustySword = {id:"rustysword1", type:'weapon', name:"Rusty Sword", slot:'rhand', damage:20, detail:"a [rusty sword] laying on the floor next to the barrel."};   //hidden property that only reveals on examine or search
+	var chest = {id:"chest", type:'container', name:"chest", detail:"a firmly constructed chest.", contents:[goldKey]};
+	
+
 
 	//ROOMS
 	var room1 = {id:"room1", name:"Troll Room"};
 	room1.detail = "a large room surrounded on all sides by water. To the [north] is an exit.  A [rope] dangles down from above";
 	room1.exits = [{name:"north", link:"room2", detail:""}, {name:"rope", link:"room3", detail:""}];
-	room1.items = [goldKey, rustySword];
+	room1.items = [chest, rustySword];
 	room1.actors = [ralph];
 
 
