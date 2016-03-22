@@ -5,7 +5,7 @@
 	To Do:
 
 		
-	
+		- equip works on unequipable items and creates a new undefined slot.  Need to check if item has existing slot and if it doesn't, it cannot be equiped.
 		- move bulk of key commands usable by actors as well as players out to player object to be inherieted by actors and then command functions just act as wrappers.
 		 for instance, commands like get, drop, equip, unequip, move, use, and attack are needed by non-player actors as well.  Also say can be basis for conversations...
 		- add update() function that will handel things like monster ai and events.
