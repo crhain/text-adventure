@@ -7,7 +7,7 @@
 	//      property(optional) - if list contains objects, then the property to access
 	//  Return: the list item that was matched or false if no match
 	//#####################################################################################################      
-	function getMatchedItemInList(words, target, property){
+	export const getMatchedItemInList = function(words, target, property) {
 
 		var sentence = words.join(" ").toLowerCase();
 		var item = undefined;
@@ -41,7 +41,7 @@
 	//
 	//   add: could use arguments and iterate through them to get nested properties?
 	//#####################################################################################################      
-	function removeMatchedItemInList(words, target, property){
+	export const removeMatchedItemInList = function (words, target, property) {
 		var sentence = words.join(" ").toLowerCase();
 		var value;
 		var item = undefined;
@@ -63,7 +63,7 @@
 	}
 
 
-	function getMatchedItemInObject(words, target, property){
+	export const getMatchedItemInObject = function (words, target, property) {
 		var sentence = words.join(" ").toLowerCase();
 		var value;
 		var item = undefined

@@ -92,8 +92,14 @@
 ###############################################################################################################################################################################################	  
 */
 
+import {getMatchedItemInList, removeMatchedItemInList, getMatchedItemInObject} from "helper-functions";
+import {Canvas, Display, Terminal} from "view/terminal-app";
+//   import {Item, Armor, Weapon, Container} from "controller/game-items";
+import { Player } from "controller/game-actors";
+import { Adventure } from "controller/game-rooms";
 
-var gameEngine = ( function(global){
+
+export const gameEngine = function() {
 
 	var game;      //holds data for current game
 
@@ -102,10 +108,6 @@ var gameEngine = ( function(global){
 	
 
 	var player;  //holds data on current character the player is using.  will just set this here right now for testing.
-
-
-
-	
 
 	init();  //Starts the game
 
@@ -696,7 +698,7 @@ var gameEngine = ( function(global){
 	}
 
 
-} )(this);  //sending this to wraper function so the global namespace gets assigned to the variable name global.
+};  //sending this to wraper function so the global namespace gets assigned to the variable name global.
 
 
 /*

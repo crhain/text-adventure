@@ -60,7 +60,7 @@ var body = document.querySelector('body');
 //############################################################################
 //CANVAS OBJECT DEFINITION
 //============================================================================
-function Canvas(width, height, tag) {
+export const Canvas = function (width, height, tag) {
 	this.canvas = document.getElementById(tag);	
 	this.ctx = this.canvas.getContext("2d");
 
@@ -79,7 +79,7 @@ function Canvas(width, height, tag) {
 //contains basic properties for displaying text
 //--------------------------------------------------------------------------------------------------------------------------------------------
 
-function Display(displayArea, font, canvas){
+export const Display = function (displayArea, font, canvas){
 	this.canvas = canvas;
 	this.display = displayArea;		//{x:pos, y:pos, width:number, height:number, background:color_string} object that defines display
 	this.font = font;				//{color:string, size:integer, style:string} object that defines font
@@ -446,7 +446,7 @@ Display.prototype.drawText = function(text){
 //The terminal displays command input and sends it to the game engine when it is entered
 //		It will also temporarily hold display output untill we create a display window object
 //--------------------------------------------------------------------------------------------------------------------------------------------
-function Terminal(displayArea, font, canvas){
+export const Terminal = function (displayArea, font, canvas){
 
     Display.call(this, displayArea, font, canvas);
     //Inherits the folowing properties from Display:
@@ -714,6 +714,3 @@ Terminal.prototype.drawText = function(text){
 	
 	
 */
-
-
-

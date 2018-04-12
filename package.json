@@ -7,6 +7,7 @@
     "doc": "docs"
   },
   "scripts": {
+    "combine": "rollup src/app/main.js --output.format iife --name \"adventure\" --output.file public/app/app.js"
   },
   "repository": {
     "type": "git",
@@ -17,5 +18,13 @@
   "bugs": {
     "url": "https://github.com/crhain/text-adventure/issues"
   },
-  "homepage": "https://github.com/crhain/text-adventure#readme"
+  "homepage": "https://github.com/crhain/text-adventure#readme",
+  "devDependencies": {
+    "gh-pages": "^1.1.0",
+    "mkdirp": "^0.5.1",
+    "ncp": "^2.0.0",
+    "npm-run-all": "^4.1.2",
+    "rimraf": "^2.6.2",
+    "rollup": "^0.57.1"
+  }
 }

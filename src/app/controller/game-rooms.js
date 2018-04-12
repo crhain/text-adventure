@@ -27,10 +27,14 @@ OVERVIEW: object constructor for an Adventure.  This contains room objects repre
 	OUTPUTS: returns an Adventure object
 #############################################################################################################################################
 */
+import {getMatchedItemInList, removeMatchedItemInList, getMatchedItemInObject} from "../helper-functions";
+import {Item, Armor, Weapon, Container} from "game-items";
+import { Actor } from "game-actors";
+
 var store = {"id":"room2", "name":"Neat", "detail": "really neato, right?"};
 var strStore = JSON.stringify(store);
 
-function Adventure(data){
+export const Adventure = function (data){
 
 	//sets starting location to start.  If no start argument given, then set to first room
 	
@@ -129,7 +133,7 @@ Adventure.prototype.setHere = function(roomID){
 };
 
 
-function Room(data){
+export const Room = function(data) {
 	//create properties representing basic room data
 	this.id = data.id;
 	this.name = data.name;

@@ -24,7 +24,10 @@ OVERVIEW: object constructor for an item object. Items represent any non-mobile 
 	OUTPUTS: returns an Item object
 #############################################################################################################################################
 */
-function Item(data){
+import {getMatchedItemInList, removeMatchedItemInList, getMatchedItemInObject} from "helper-functions";
+
+
+export const Item = function (data){
 	this.id = 					data.id;
 	this.name = 				data.name;
 	//this.detail_placed =		data.detail_placed;   //this represents the description of the item the first time it is viewed
@@ -66,7 +69,7 @@ OVERVIEW: object constructor for any weareable object.
 	OUTPUTS: returns an Item object
 #############################################################################################################################################
 */
-function Armor(data){
+export const Armor = function (data){
 
 	Item.call(this, data);
 
@@ -90,7 +93,7 @@ OVERVIEW: object constructor for object that can be used as a weapon.
 	OUTPUTS: returns an Item object
 #############################################################################################################################################
 */
-function Weapon(data){
+export const Weapon = function (data){
 
 	Item.call(this, data);
 
@@ -115,7 +118,7 @@ OVERVIEW: object constructor for object that is fixed and can contain other obje
 	OUTPUTS: returns an Item object
 #############################################################################################################################################
 */
-function Container(data){
+export const Container = function (data){
 
 	Item.call(this, data);
 

@@ -5,10 +5,7 @@ GAME-ACTORS.JS
 ============================================================================================================================================================================================
 Overview: contains objects defining any actor in the game, including player, friendlies, and hostiles.
 ============================================================================================================================================================================================		
-To Do:			
-============================================================================================================================================================================================
-Notes:
-	    
+
 ###############################################################################################################################################################################################	  
 */
 //Note: do not give player attribute names that are the same as item attribute names or the addItemStats and removeItemStats methods will not work correctly.
@@ -25,7 +22,9 @@ OVERVIEW: contains basic properties for displaying text
 	OUTPUTS: returns a player object
 #############################################################################################################################################
 */
-function Player(data){
+import {getMatchedItemInList, removeMatchedItemInList, getMatchedItemInObject} from "helper-functions";
+
+export const Player = function (data){
 	//data is an object with the player data (either passed or object literal)
 
 
@@ -225,7 +224,7 @@ merchtants.
 	OUTPUTS: returns an Actor object
 #############################################################################################################################################
 */
-function Actor(data){
+export const Actor= function(data){
 
 	//Player.call(this, data);  //currently the player uses fullName property and actors use name properties
 
