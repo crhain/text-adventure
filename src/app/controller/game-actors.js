@@ -224,6 +224,7 @@ merchtants.
 	OUTPUTS: returns an Actor object
 #############################################################################################################################################
 */
+
 export const Actor= function(data){
 
 	//Player.call(this, data);  //currently the player uses fullName property and actors use name properties

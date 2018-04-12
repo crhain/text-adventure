@@ -24,8 +24,7 @@ OVERVIEW: object constructor for an item object. Items represent any non-mobile 
 	OUTPUTS: returns an Item object
 #############################################################################################################################################
 */
-import {getMatchedItemInList, removeMatchedItemInList, getMatchedItemInObject} from "helper-functions";
-
+import {getMatchedItemInList, removeMatchedItemInList, getMatchedItemInObject} from "../helper-functions.js";
 
 export const Item = function (data){
 	this.id = 					data.id;

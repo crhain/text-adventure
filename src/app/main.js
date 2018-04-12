@@ -1,3 +1,4 @@
-import { gameEngine } from "controller/game-engine";
+import gameEngine from './controller/game-engine.js';
 
-gameEngine();
+export default gameEngine();
+

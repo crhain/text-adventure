@@ -1,105 +1,16 @@
 /* 
-############################################################################################################################################################################################
-############################################################################################################################################################################################
-
-	To Do:
-
-		
-		- equip works on unequipable items and creates a new undefined slot.  Need to check if item has existing slot and if it doesn't, it cannot be equiped.
-		- move bulk of key commands usable by actors as well as players out to player object to be inherieted by actors and then command functions just act as wrappers.
-		 for instance, commands like get, drop, equip, unequip, move, use, and attack are needed by non-player actors as well.  Also say can be basis for conversations...
-		- add update() function that will handel things like monster ai and events.
-		
-		- add scenes (splash screen, main menue, character creation screen)
-		- update look command to show details of items and monsters (done); 
-		       should add player equiped items and exits to list
-		- add in containers along with container commands
-		    - open
-		    - pick
-		    - get all
-		    - search
-		- add in combat system and simple monster ai along with basic combat commands:
-		   - attack - works by calculating hit and damage, then sets actor to hostile; update will then look at all actors in room and make hostile ones attack.
-		              could have a faction system so that monsters might attack others.
-		   - flee
-		   - status
-		
-		
-		- add in search command and searching bodies
-		- add dialog system and commands		
-		- create hall of  heroes and tome of adventure with system for starting games
-		- add use, drink, eat, read commands
-		
-	done:
-		- add basic save/load system (using commands for now, but using menu latter on) (done)  : final version 
-		- add in ojbects for game elements (Adventure, player, actor, item) and reconfigure engine to work with them. (done) 
-		- udpate move command to use new functions (done)
-		- finish developing item attributes and add some sample items (done)
-		- add item related commands:
-		   - equip (done)
-		   - unequip (done)
-		- add in player stats (done)
-
-
-
-	other features:
-	    - pass name of command matched to command handlers so they can refer to it when needed
-		- add context commands like climb (basically wraps move cmd put only works for exits marked as climeable)
-
-	premium features:
-		- html-esque formating for text
-		- tag system for writing text so that items, actors, etc. can be embeded in text description and portions of text can be shown or hidden based on game state
-		- spell casting system
-		- traps
-		- leveling system
-		- display images
-		- sounds
-
-		
-		
-	Features:
-		- combat system for battling monsters.  monsters can persue and move into other rooms
-		- wear armor, rings, and necklaces.  fight with weapons	
-        - conversation system where player uses commands like ask [highlighted term] or say [set phrases like yes, no] or use non-verbal commands like smile, threaten, cower
-        - can use abbreviated words or synonoms when reforing to items and actors...
-        - can have followers or companions or befriend
-
-	Revision: 
-			
-
-    Overview:
-			- game-data.js (holds games global array and HoH game data)
-			- various game data files for each game
-			- terminal-app.js  holds constructors for various game display elements
-			- game-engine.js   holds main game logic and starts the whole thing rolling
-
-	Notes:
-		
-	    - construct room description from bits of text.  for instance, when the character moves, it starts with text "You walk into "
-	       then it adds the rooms description "a small, round room with a high ceiling lost in shadows."  this is teh short description.  added to it
-	       are the short descriptions for exits, items, and actors.  look command brings up a longer description.  Examine command or search brings up hidden description
-	    - when more than one actor of the same type is in the room, game will count them and and translate the number into a number word and use right articles and plurals.
-	      example: you see two trolls standing by the door.   
-		- when a room is loaded as location, any items or mobs present are also read in and created as objects.
-		- maybe add ability for monsters to move between rooms, in which case they must be removed from the current room.
-		- game data will be stored as json files in the game-data.js file for now. 
-		- new games can be added by 1) creating a new script file with the json literals and
-		  2) adding the variable name of the json to the games array and 3) adding line to
-		  index.html to load the file
-		- save data will be placed in localStorage
-		- a games global array will hold the names of all json game files to be loaded		
-
-###############################################################################################################################################################################################	  
+#############################################################################################################################################################
+#############################################################################################################################################################
+#############################################################################################################################################################	  
 */
+import {getMatchedItemInList, removeMatchedItemInList, getMatchedItemInObject} from "../helper-functions.js";
+import {Canvas, Display, Terminal} from "../view/terminal-app.js";
+// import {Item, Armor, Weapon, Container} from "./game-items.js";
+import { Player } from "./game-actors.js";
+import { Adventure } from "./game-rooms.js";
 
-import {getMatchedItemInList, removeMatchedItemInList, getMatchedItemInObject} from "helper-functions";
-import {Canvas, Display, Terminal} from "view/terminal-app";
-//   import {Item, Armor, Weapon, Container} from "controller/game-items";
-import { Player } from "controller/game-actors";
-import { Adventure } from "controller/game-rooms";
 
-
-export const gameEngine = function() {
+export default function() {
 
 	var game;      //holds data for current game
 
@@ -108,6 +19,10 @@ export const gameEngine = function() {
 	
 
 	var player;  //holds data on current character the player is using.  will just set this here right now for testing.
+	var canvas;
+	var terminal;
+	var display;
+	var playerdisplay;
 
 	init();  //Starts the game
 
@@ -133,12 +48,8 @@ export const gameEngine = function() {
 			//update();  //this is only called if a command was entered, as game in turns based on keyboard input - need to write this function
 		}
 
-		update();
-
-				
+		update();				
 	}
-
-
 	
 	//################################################################################
 	//COMMANDS LISTING - shows commands game understands
@@ -330,7 +241,7 @@ export const gameEngine = function() {
 
 				if(match) {
 					game.setHere(match.link);
-					game.here.show(global.display, "You enter ");	
+					game.here.show(display, "You enter ");	
 				}
 				else{
 					cmdError(["You want to go where?"]);
@@ -379,7 +290,7 @@ export const gameEngine = function() {
 			}
 			else{
 
-				game.here.show(global.display, "You are in ");  //just show the room if there are no arguments
+				game.here.show(display, "You are in ");  //just show the room if there are no arguments
 			}		
 		}
 		//get's item and adds to player inventory
@@ -575,10 +486,10 @@ export const gameEngine = function() {
 
 		//create a new canvas
 		// this is required to initialize the other objects as they must take it as a paramater
-		global.canvas = new Canvas(1200, 600, 'canvas');
+		canvas = new Canvas(1200, 600, 'canvas');
 
 		//Creates terminal object for inputing text and displaying the text input
-		global.terminal = new Terminal(
+		terminal = new Terminal(
 			{
 				x:0,   //sets x position where terminal display starts
 				y:500,   //sets y position where terminal display starts
@@ -595,7 +506,7 @@ export const gameEngine = function() {
 		);
 
 		
-		global.playerdisplay = new Display(
+		playerdisplay = new Display(
 			{
 				x:0,
 				y:0,
@@ -614,7 +525,7 @@ export const gameEngine = function() {
 		
 
 		//create a new display
-		global.display = new Display(
+		display = new Display(
 			{
 				x:0,
 				y:0,
@@ -643,7 +554,7 @@ export const gameEngine = function() {
 		loadGame();
 
 		//The following is for testing purpose only.  Get ride of this once we are able to laod in text from data files
-		game.here.show(global.display, "You find yourself in ");
+		game.here.show(display, "You find yourself in ");
 
 		//Start the game by calling main()
 		main(); 
@@ -698,84 +609,8 @@ export const gameEngine = function() {
 	}
 
 
-};  //sending this to wraper function so the global namespace gets assigned to the variable name global.
+}; 
 
-
-/*
- create utility function called smartmatch(search, target) that matches a list of words against another list with multiword strings.
-		  it must cumulatively do sub-matches against the target strings untill it has matched one of the target strings completely.
-		  It could also do partial matches based on some algorithim and return the best match.  For instance, it would understand abbreviations or mispellings like n or nroth for north
-
-*/
-
-
-
-
-/*
-1. I could declare game objects in a new file. objects would be:
-  - Player
-  	 this.name
-  	 this.sex
-  	 this.age
-  	 this.detail
-     this.inventory = []
-     this.equiped = {right:{}, left:{}, head:{}} 
-     this.maxHealth = ;
-     this.maxStrength = ;
-     this.maxDexterity = ;
-     this.currHealth = ;
-     this.currStrength = ;
-     this.currDexterity = ;
-     this.alive = true;
-
-  - actor
-    inheriet from player or maybe other way around
-       this.location = ""
-
-
-  - item
-
-     
-commands:
-
-1. look [target]  = look at room (no arguments) or target (actor, item, inventory)
-2. search [target]  = search room (no arguments) or target (can be a dead body or container)
-*3. move (exit) = move through an exit
-*4. take (item)
-5. drop (item) = adds it to room
-6. equip (item) = in addition to adding it to playcer, it's properties can improve player stats
-7. unequip (item) = in addition to unequping it from player, it's properties will be removed from player stats
-8. use (item)
-9. drink (liquid item)
-10. eat (food item)
-
-
-7. attack
-8. talk [target] = start a conversation if possible
-9. say [string]  = say a string of words
-10. emotes      = simply echo what player typed in.  could be used for special interactions
-
-- drop
-- put
-- give
-- disarm (door, container, trap)  if traps are added
-- unlock (door, container)
-- climb  (special exits)
-
-
-neat idea:  add tags into detail description that weaves details of an item or monster into the scene.  Could also block out sections that
-will appear or disappear depending on various flags.  This would require that the text be parced first before being displayed.
-
-
-Additional Features:
-* markup language for mixing monster and item descriptions into the main room text or showing/hidding parts of description depending on game state
-* reactive room descriptions, special events that can occur (first entering, running commands, game state changes)
-* 
-* actors can follow the player
-
-
-
-*/
 
 
 

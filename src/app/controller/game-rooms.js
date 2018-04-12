@@ -27,9 +27,9 @@ OVERVIEW: object constructor for an Adventure.  This contains room objects repre
 	OUTPUTS: returns an Adventure object
 #############################################################################################################################################
 */
-import {getMatchedItemInList, removeMatchedItemInList, getMatchedItemInObject} from "../helper-functions";
-import {Item, Armor, Weapon, Container} from "game-items";
-import { Actor } from "game-actors";
+import {getMatchedItemInList, removeMatchedItemInList, getMatchedItemInObject} from "../helper-functions.js";
+import {Item, Armor, Weapon, Container} from "./game-items";
+import { Actor } from "./game-actors";
 
 var store = {"id":"room2", "name":"Neat", "detail": "really neato, right?"};
 var strStore = JSON.stringify(store);
