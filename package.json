@@ -1,0 +1,21 @@
+{
+  "name": "text-adventure",
+  "version": "0.2.0",
+  "description": "A simple text adventure game based on the classic EAMON",
+  "main": "index.html",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crhain/text-adventure.git"
+  },
+  "author": "Carl Hain",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/crhain/text-adventure/issues"
+  },
+  "homepage": "https://github.com/crhain/text-adventure#readme"
+}
